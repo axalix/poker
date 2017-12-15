@@ -39,6 +39,5 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY app.ini /app.ini
 COPY entrypoint.sh /entrypoint.sh
 
-
 # exectute start up script
 ENTRYPOINT ["/entrypoint.sh"]

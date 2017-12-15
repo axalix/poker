@@ -1,10 +1,10 @@
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-from app import poker, db
+from app import app, db
 
 
-migrate = Migrate(poker, db)
-manager = Manager(poker)
+migrate = Migrate(app, db)
+manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
 

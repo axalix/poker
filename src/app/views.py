@@ -1,5 +1,5 @@
 
-from app import poker
+from app import app
 from flask import render_template, flash, redirect
 
 import random
@@ -7,8 +7,8 @@ from app.forms import LoginForm
 
 # INDEX ----------------------------------------------------------------
 
-@poker.route('/')
-@poker.route('/index')
+@app.route('/')
+@app.route('/index')
 def index():
     return "Hello, World!" # + str(poker.config)
 
@@ -16,7 +16,7 @@ def index():
 
 # TEST ----------------------------------------------------------------
 
-@poker.route('/test')
+@app.route('/test')
 def test():
     user = { 'nickname': 'Alex' }
 
@@ -58,7 +58,7 @@ images = [
     # "http://ak-hdl.buzzfed.com/static/2013-10/enhanced/webdr03/15/10/anigif_enhanced-buzz-11980-1381846269-1.gif"
 ]
 
-@poker.route('/cats')
+@app.route('/cats')
 def cats():
 
     url = random.choice(images)
@@ -67,7 +67,7 @@ def cats():
 # Login ----------------------------------------------------------------
 
 
-@poker.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -77,7 +77,7 @@ def login():
     return render_template('login.html',
                            title='Sign In',
                            form=form,
-                           providers=poker.config['OPENID_PROVIDERS'])
+                           providers=app.config['OPENID_PROVIDERS'])
 
 
 
