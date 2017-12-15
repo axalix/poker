@@ -37,3 +37,15 @@
 
 9. How to test:
     http://127.0.0.1:8001/cats
+
+
+10. How to enable autoreloading in a console, so when you change the files, those changes will be applied right away:
+    cd ~/PythonProjects/poker-flask/src
+    ipython
+    %load_ext autoreload
+    %autoreload 2
+    from poker.deck import Deck
+    d = Deck()
+    d.get(1)
+
+
