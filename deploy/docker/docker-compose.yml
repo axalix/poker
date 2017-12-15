@@ -1,0 +1,39 @@
+version: '2'
+services:
+
+  redis:
+    image: redis:3.0
+
+
+  postgres:
+    restart: always
+    build: ./images/postgres
+    expose:
+      - "5432"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    env_file:
+      - variables.env
+
+
+  flask-nginx:
+    build: ./images/flask-nginx
+    restart: always
+    expose:
+      - "80"
+    ports:
+      - "8001:80"
+    volumes:
+      - ./../../src:/app
+    # comment out next line to stop the debugging mode + update src/app.py (lines at the bottom)
+    command: -d
+    working_dir: /app
+    env_file:
+      - variables.env
+
+
+volumes:
+  postgres:
+    driver: local

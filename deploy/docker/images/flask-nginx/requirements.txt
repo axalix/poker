@@ -1,0 +1,17 @@
+uwsgi
+psycopg2
+sqlalchemy
+sqlalchemy-migrate
+pytz
+flup-py3
+Flask
+Flask_Script
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Flask-Openid
+Flask-Mail
+Flask-Whooshalchemy
+Flask-Wtf
+Flask-Babel
+
