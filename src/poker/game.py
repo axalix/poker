@@ -13,21 +13,22 @@ class Game:
         self._current_state = None
         self._id = id_
         self._players = players
-        # self._state_iterator = iter(self.states)
-        self._deck = Deck
+
+        self._deck = Deck()
         self._pot = 0
         self._table_cards = []
         self._assign_pocket_cards()
+        self._state_iterator = iter(self.states)
 
     # ------- Game Process
 
     # main loop
-    def play(self):
-
-        for self._current_state in self.states:
-            self.__change_state()
+    def tick(self):
+        self.__change_state()
+        return self._state_iterator
 
     def __change_state(self):
+        self._current_state = next(self._state_iterator)
         getattr(self, 'do_' + self._current_state.lower())()
 
     # ------- Player
@@ -41,7 +42,7 @@ class Game:
     def get_table_cards(self):
         return self._table_cards
 
-    # ------- Balance
+    # ------- Money
 
     # ------- Actions
 
