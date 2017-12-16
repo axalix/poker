@@ -1,5 +1,6 @@
 import random
 
+
 class Deck:
     ranks = tuple(range(2, 11)) + ('J', 'Q', 'K', 'A')
 
@@ -17,12 +18,14 @@ class Deck:
         self._deck = Deck.__create_cards()
         self.shuffle()
 
-
     def shuffle(self):
         random.shuffle(self._deck)
 
-
     def get(self, n):
+        """
+        :param n: int
+        :return:
+        """
         if len(self._deck) >= n:
             r = self._deck[0:n]
             del self._deck[0:n]
