@@ -5,6 +5,7 @@ from poker.player import Player
 class Game:
     states = ('Preflop', 'Flop', 'Turn', 'River')
 
+
     def __init__(self, id_, players):
         """
         :type id_: int

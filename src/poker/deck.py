@@ -2,9 +2,12 @@ import random
 
 
 class Deck:
-    ranks = tuple(range(2, 11)) + ('J', 'Q', 'K', 'A')
+    ranks        = tuple(range(2, 10)) + ('T', 'J', 'Q', 'K', 'A')
+    ranks_powers = dict((v, k + 2) for k, v in enumerate(ranks))
 
-    suits = ('♥', '♦', '♣', '♠')
+
+    #suits = ('♥', '♦', '♣', '♠')
+    suits = ('H', 'D', 'C', 'S')
 
     @classmethod
     def __create_cards(cls):
