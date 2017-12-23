@@ -10,6 +10,7 @@ class Card:
         self.rank = rank
         self.rank_name = 'A' if rank == 1 else Deck.ranks_to_names[rank]
 
+
         self.suit = suit
         self.suit_name = Deck.suits_to_names[suit]
 
