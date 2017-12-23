@@ -16,7 +16,8 @@ class CombinationChecker:
     PATTERN_FOUR_SAME_RANK                  = 'four_same_rank'
     PATTERN_TJQKA_AND_SAME_SUIT             = 'tjqka_and_same_suit'
 
-    MAX_5 = 579194 # AAAAK: 14 * 14^4 + 14 * 14^3 + 14 * 14^2 + 14 * 14^1 + 13 * 14 ^0 + 1
+    # 14-digits notations: 0 - 13. A = 13, 2 = 0
+    MAX_5 = 537824 # AAAAK: 13 * 14^4 + 13 * 14^3 + 13 * 14^2 + 13 * 14^1 + 13 * 12^0 + 1
 
     # J - 11
     # Q - 12
@@ -140,7 +141,6 @@ class CombinationChecker:
         :type combination: CombinationEnum
         :rtype: int
         """
-
         # Straight A2345 => power(A) = 1 => 2345A
         if combination == CombinationEnum.straight:
             if cards[0].is_ace() and cards[1].rank == 5:
@@ -149,7 +149,7 @@ class CombinationChecker:
         power = 0
         n = len(cards)
         for i, card in enumerate(cards):
-            power += 14**(n - i - 1) * card.rank
+            power += 14**(n - i - 1) * (card.rank - 1) # A = 14 or 13 in a 14-digits notation => rank - 1
 
         return power
 
@@ -191,7 +191,7 @@ class CombinationChecker:
 
     def powerful_addition(self, combination_cards):
         """
-        :type seven_cards: list of Card
+        :type combination_cards: list of Card
         :rtype: int
         """
         addition_cards_number = 5 - len(combination_cards)
@@ -325,5 +325,4 @@ class CombinationChecker:
         same_suit_cards = self.five_same_suit(seven_cards)
         if not same_suit_cards:
             return None
-
         return same_suit_cards if list(map(lambda x: x.rank, same_suit_cards)) == list(range(14, 9, -1)) else None
