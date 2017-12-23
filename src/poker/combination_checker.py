@@ -1,18 +1,20 @@
 from collections import Counter
+from poker.deck import Card
 from poker.deck import Deck
 from poker.enums.combination_enum import CombinationEnum
 
 
 class CombinationChecker:
-    PATTERN_HIGH_RANK = 'high_rank'
-    PATTERN_TWO_SAME_RANK = 'two_same_rank'
-    PATTERN_TWO_SAME_RANK_PAIRS = 'two_same_rank_pairs'
-    PATTERN_THREE_SAME_RANK = 'three_same_rank'
-    PATTERN_THREE_SAME_RANK_TWO_SAME_RANK = 'three_same_rank_two_same_rank'
-    PATTERN_FIVE_IN_ORDER = 'five_in_order'
-    PATTERN_FIVE_SAME_SUIT = 'five_same_suit'
-    PATTERN_FOUR_SAME_RANK = 'four_same_rank'
-    PATTERN_TJQKA = 'tjqka'
+    PATTERN_HIGH_RANK                       = 'high_rank'
+    PATTERN_TWO_SAME_RANK                   = 'two_same_rank'
+    PATTERN_TWO_SAME_RANK_PAIRS             = 'two_same_rank_pairs'
+    PATTERN_THREE_SAME_RANK                 = 'three_same_rank'
+    PATTERN_THREE_SAME_RANK_TWO_SAME_RANK   = 'three_same_rank_two_same_rank'
+    PATTERN_FIVE_IN_ORDER                   = 'five_in_order'
+    PATTERN_FIVE_IN_ORDER_AND_SAME_SUIT     = 'five_in_order_and_same_suit'
+    PATTERN_FIVE_SAME_SUIT                  = 'five_same_suit'
+    PATTERN_FOUR_SAME_RANK                  = 'four_same_rank'
+    PATTERN_TJQKA_AND_SAME_SUIT             = 'tjqka_and_same_suit'
 
     # J - 11
     # Q - 12
@@ -92,7 +94,7 @@ class CombinationChecker:
 
         CombinationEnum.straight_flush: {
             'name': 'Straight Flush',
-            'pattern': (PATTERN_FIVE_IN_ORDER, PATTERN_FIVE_SAME_SUIT),
+            'pattern': PATTERN_FIVE_IN_ORDER_AND_SAME_SUIT,
             'base_power': 382
             # min = A + 2 + 3 + 4 + 5 = 15
             # max = T + J + Q + K + A = 60
@@ -101,13 +103,14 @@ class CombinationChecker:
 
         CombinationEnum.royal_flush: {
             'name': 'Royal Flush',
-            'pattern': (PATTERN_TJQKA, PATTERN_FIVE_SAME_SUIT),
+            'pattern': PATTERN_TJQKA_AND_SAME_SUIT,
             'base_power': 383
             # min = T + J + Q + K + A = 60
             # max = T + J + Q + K + A = 60
             # power = prev_power + prev_max - min + 1 = 382 + 60 - 60 + 1 = 383
         }
     }
+
 
     def __init__(self, pocket_cards, table_cards):
         """
@@ -117,55 +120,40 @@ class CombinationChecker:
         self.pocket_cards = pocket_cards
         self.table_cards = table_cards
 
-        (combination, winning_cards, power) = self.__process(self.pocket_cards + self.table_cards)
-        # self.power = CombinationChecker.__calculate_power(self.pocket_cards, self.table_cards, combination)
-        # self.name = combination['name']
+        (self.combination, self.winning_cards, self.power) = self.__process(self.pocket_cards + self.table_cards)
 
 
     def __process(self, seven_cards):
         """
-        :type seven_cards: list
-        :rtype: list
+        :type seven_cards: list of Card
+        :rtype: list ' [combination, winning_cards, power]
         """
-
         for combination in CombinationEnum:
-            winning_cards_and_power = self.__test_cards_against_combination(seven_cards, combination)
-            if winning_cards_and_power:
-                return [combination] + winning_cards_and_power
+            victory = self.__test_cards_against_combination(seven_cards, combination)
+            if victory:
+                return victory
 
 
     def __test_cards_against_combination(self, seven_cards, combination):
         """
-        :type seven_cards: list
+        :type seven_cards: list of Card
         :type combination: CombinationEnum
         :rtype: list
         """
-
         combination_rule = self.combinations_rules[combination]
-        combination_name = combination.name
         pattern = combination_rule['pattern']
         base_power = combination_rule['base_power']
 
-        winning_cards = []
-        power = 0
-
-        if isinstance(pattern, tuple):
-            for p in pattern:
-                combination_cards = getattr(self, '__test_pattern_' + p)(seven_cards)
-                if combination_cards:
-                    pass
-        else:
-            combination_cards = getattr(self, '__test_pattern_' + pattern)(seven_cards)
-            if combination_cards:
-                power = base_power
-
+        winning_cards = getattr(self, pattern)(seven_cards)
         if not winning_cards:
             return None
 
-        power += CombinationChecker.__power(winning_cards) + \
-                 CombinationChecker.__kicker_cards_power(seven_cards, winning_cards)
+        power = base_power + \
+                CombinationChecker.__power(winning_cards, combination) + \
+                CombinationChecker.__kicker_cards_power(seven_cards, winning_cards)
 
-        return [winning_cards, power]
+        return [combination, winning_cards, power]
+
 
     @staticmethod
     def __diff(list1, list2):
@@ -173,14 +161,25 @@ class CombinationChecker:
 
 
     @classmethod
-    def __power(cls, cards):
+    def __power(cls, cards, combination = None):
         """
-        :type cards: list
+        :type cards: list of Card
+        :type combination: CombinationEnum
         :rtype: int
         """
         power = 0
+        if not isinstance(cards, list):
+            print(combination)
+            exit(1)
+
         for card in cards:
-            power += Deck.ranks_powers[card[0]]
+            power += card.rank
+
+        # Straight A2345 => power(A) = 1
+        if combination == CombinationEnum.straight:
+            cards = CombinationChecker.__select_high_cards(cards, 2)
+            if cards[0].is_ace() and cards[1].rank == 5:
+                power -= 13
 
         return power
 
@@ -188,18 +187,40 @@ class CombinationChecker:
     @classmethod
     def __select_high_cards(cls, cards, n):
         """
-        :type cards: list
+        :type cards: list of Card
         :type n: int
-        :rtype: list
+        :rtype: list of Card
         """
-        return sorted(cards, key=lambda x: Deck.ranks_powers[x[0]], reverse=True)[:n]
+        return sorted(cards, key=lambda c: c.rank, reverse=True)[:n]
 
+
+    @classmethod
+    def __select_same_suit_cards(self, cards, n):
+        """
+        :param cards: list of Card
+        :rtype: list of Card
+        """
+        d = {}
+        for card in cards:
+            if card.suit not in d:
+                d[card.suit] = []
+            d[card.suit].append(card)
+
+        max = 0
+        same_suit_cards = []
+        for suit, suited_cards in d.items():
+            n = len(cards)
+            if n > max:
+                max = n
+                same_suit_cards = suited_cards
+
+        return CombinationChecker.__select_high_cards(same_suit_cards, n)
 
     @classmethod
     def __kicker_cards_power(cls, seven_cards, winning_cards):
         """
-        :type seven_cards: list
-        :type winning_cards: list
+        :type seven_cards: list of Card
+        :type winning_cards: list of Card
         :rtype: int
         """
         kicker_cards_number = len(winning_cards) - 5
@@ -213,69 +234,132 @@ class CombinationChecker:
 
     # ------ Patterns Checkers
 
-    def __test_pattern_high_rank(self, seven_cards):
+    def high_rank(self, seven_cards):
         return CombinationChecker.__select_high_cards(seven_cards, 1)
 
-    def __test_pattern_same_rank(self, seven_cards, n):
-        """
 
-        :type seven_cards: list
+    def same_rank(self, seven_cards, n):
+        """
+        :type seven_cards: list of Card
         :param n: int
-        :rtype: list
+        :rtype: list of Card
         """
         counter = Counter()
         for card in seven_cards:
-            counter[card[0]] += 1
+            counter[card.rank] += 1
 
         most_common = counter.most_common(1)
-        if most_common[1] == n:
-            return map(lambda x: x[1] == most_common[0], seven_cards)
+
+        if most_common[0][1] == n:
+            return list(filter(lambda x: x.rank == most_common[0][0], seven_cards))
         return None
 
-    def __test_pattern_two_same_rank(self, seven_cards):
-        return self.__test_pattern_same_rank(seven_cards, 2)
+
+    def two_same_rank(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        return self.same_rank(seven_cards, 2)
 
 
-    def __test_pattern_two_same_rank_pairs(self, seven_cards):
-        pair = self.__test_pattern_two_same_rank(seven_cards)
+    def two_same_rank_pairs(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        pair = self.two_same_rank(seven_cards)
         if not pair:
             return None
 
         remaining_cards = CombinationChecker.__diff(seven_cards, pair)
-        second_pair = self.__test_pattern_two_same_rank(remaining_cards)
+        second_pair = self.two_same_rank(remaining_cards)
         if not second_pair:
             return None
 
         return pair + second_pair
 
 
-    def __test_pattern_three_same_rank(self, seven_cards):
-        return self.__test_pattern_same_rank(seven_cards, 3)
+    def three_same_rank(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        return self.same_rank(seven_cards, 3)
 
 
-    def __test_pattern_three_same_rank_two_same_rank(self, seven_cards):
-        three = self.__test_pattern_three_same_rank(seven_cards)
+    def three_same_rank_two_same_rank(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        three = self.three_same_rank(seven_cards)
         if not three:
             return None
 
         remaining_cards = CombinationChecker.__diff(seven_cards, three)
-        second_pair = self.__test_pattern_two_same_rank(remaining_cards)
+        second_pair = self.two_same_rank(remaining_cards)
         if not second_pair:
             return None
 
         return three + second_pair
 
 
-    def __test_pattern_four_same_rank(self, seven_cards):
-        return self.__test_pattern_same_rank(seven_cards, 4)
+    def four_same_rank(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        return self.same_rank(seven_cards, 4)
 
 
-    def __test_pattern_five_in_order(self, seven_cards):
-        return True
+    def five_in_order(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        cards = CombinationChecker.__select_high_cards(seven_cards, 7)
+
+        # ace with rank 1
+        if cards[0].is_ace():
+            cards.append(Card(1, cards[0].suit))
+
+        prev_rank = cards[0].rank
+        ordered_cards = [cards[0]]
+
+        for i in range(1, len(cards)):
+            card = cards[i]
+            if len(ordered_cards) == 5:
+                break
+
+            if card.rank == prev_rank - 1:
+                ordered_cards.append(card)
+                if (len(ordered_cards) == 5):
+                    return ordered_cards
+            else:
+                ordered_cards = [card]
+            prev_rank = card.rank
+
+        return None
 
 
-    def __test_pattern_five_same_suit(self, seven_cards):
-        return True
+    def five_same_suit(self, seven_cards):
+        same_suit_cards = CombinationChecker.__select_same_suit_cards(seven_cards, 5)
+        return CombinationChecker.__select_same_suit_cards(seven_cards, 5) if len(same_suit_cards) > 4 else None
 
-    def __test_pattern_tjqka(self, seven_cards):
-        return True
+
+    def five_in_order_and_same_suit(self, seven_cards):
+        same_suit_cards = CombinationChecker.__select_same_suit_cards(seven_cards, 7)
+        return self.five_in_order(same_suit_cards) if len(same_suit_cards) > 4 else None
+
+
+    def tjqka_and_same_suit(self, seven_cards):
+        """
+        :param seven_cards: list of Card
+        :rtype: list of Card
+        """
+        same_suit_cards = self.five_same_suit(seven_cards)
+        if not same_suit_cards:
+            return None
+
+        return same_suit_cards if list(map(lambda x: x.rank, same_suit_cards)) == list(range(14, 9, -1)) else None
