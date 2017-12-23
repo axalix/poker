@@ -45,22 +45,23 @@ from poker.enums.combination_enum import CombinationEnum
 #
 # exit(1)
 
+# d = Deck()
+# #cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from '2'
+# cards = [Card(14, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from 'A'
+# # #cards = d.get(5)
+# #
+# # #cards = [Card(2, 'D'), Card(10, 'D')]
+# # #cards = [Card(9, 'D'), Card(9, 'S')]
+# # #cards = [Card(14, 'D'), Card(14, 'D'), Card(14, 'D'), Card(14, 'D'), Card(13, 'S')]
+# # cards = [Card(2, 'D'), Card(2, 'D')]
+# #
+# # print(cards)
+# print(CombinationChecker.power(cards, CombinationEnum.straight))
+# #print(CombinationChecker.power(cards))
+#
+# exit(1)
+
 d = Deck()
-#cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from '2'
-cards = [Card(14, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from 'A'
-# #cards = d.get(5)
-#
-# #cards = [Card(2, 'D'), Card(10, 'D')]
-# #cards = [Card(9, 'D'), Card(9, 'S')]
-# #cards = [Card(14, 'D'), Card(14, 'D'), Card(14, 'D'), Card(14, 'D'), Card(13, 'S')]
-# cards = [Card(2, 'D'), Card(2, 'D')]
-#
-# print(cards)
-print(CombinationChecker.power(cards, CombinationEnum.straight))
-#print(CombinationChecker.power(cards))
-
-exit(1)
-
 two1 = d.get(2)
 two2 = d.get(2)
 five = d.get(5)
@@ -76,21 +77,21 @@ c2 = CombinationChecker(two2, five)
 print(five)
 print('. . . . . .')
 
-print(two1)
+print('Pocket cards #1: ' + str(two1))
 print(c1.combinations_rules[c1.combination]['name'])
-print(c1.combination_cards)
-print(c1.kicker_cards)
-print(c1.power_cards)
-print(c1.power)
+print('Winning combination #1: ' + str(c1.combination_cards))
+print('Possible kickers #1: ' + str(c1.kicker_cards))
+#print(c1.power_cards)
+print('Power #1: ' + str(c1.power))
 
 print('=============')
 
-print(two2)
+print('Pocket cards #1: ' + str(two2))
 print(c2.combinations_rules[c2.combination]['name'])
-print(c2.combination_cards)
-print(c2.kicker_cards)
-print(c2.power_cards)
-print(c2.power)
+print('Winning combination #1: ' + str(c2.combination_cards))
+print('Possible kickers #1: ' + str(c2.kicker_cards))
+#print(c2.power_cards)
+print('Power #1: ' + str(c2.power))
 
 # kicker: [K♣, J♦,  9♦, 7♥] 4
 # kicker: [K♣, 10♣, 9♦, 8♣] 4

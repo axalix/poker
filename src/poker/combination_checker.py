@@ -284,7 +284,6 @@ class CombinationChecker:
         :param seven_cards: list of Card
         :rtype: list of Card
         """
-
         # ace with rank 1
         if seven_cards[0].is_ace():
             seven_cards.append(Card(1, seven_cards[0].suit))
