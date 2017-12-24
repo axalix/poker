@@ -45,9 +45,10 @@ from poker.enums.combination_enum import CombinationEnum
 #
 # exit(1)
 
-# d = Deck()
-# #cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from '2'
-# cards = [Card(14, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from 'A'
+d = Deck()
+cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from '2'
+#cards = [Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D'), Card(14, 'D')] # straight from 'A'
+#cards = [Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D'), Card(14, 'D')] # straight from 'A'
 # # #cards = d.get(5)
 # #
 # # #cards = [Card(2, 'D'), Card(10, 'D')]
@@ -57,49 +58,50 @@ from poker.enums.combination_enum import CombinationEnum
 # #
 # # print(cards)
 # print(CombinationChecker.power(cards, CombinationEnum.straight))
-# #print(CombinationChecker.power(cards))
+print(Card.power(cards))
+
 #
 # exit(1)
-
-d = Deck()
-two1 = d.get(2)
-two2 = d.get(2)
-five = d.get(5)
-
-# two1 = [Card(13, 'H'), Card(2, 'C')]
-# two2 = [Card(14, 'S'), Card(12, 'S')]
-# five = [Card(6, 'D'), Card(12, 'S'), Card(13, 'C'), Card(6, 'C'), Card(8, 'C')]
-
-c1 = CombinationChecker(two1, five)
-c2 = CombinationChecker(two2, five)
-
-
-print(five)
-print('. . . . . .')
-
-print('Pocket cards #1: ' + str(two1))
-print(c1.combinations_rules[c1.combination]['name'])
-print('Winning combination #1: ' + str(c1.combination_cards))
-print('Possible kickers #1: ' + str(c1.kicker_cards))
-#print(c1.power_cards)
-print('Power #1: ' + str(c1.power))
-
-print('=============')
-
-print('Pocket cards #1: ' + str(two2))
-print(c2.combinations_rules[c2.combination]['name'])
-print('Winning combination #1: ' + str(c2.combination_cards))
-print('Possible kickers #1: ' + str(c2.kicker_cards))
-#print(c2.power_cards)
-print('Power #1: ' + str(c2.power))
-
-# kicker: [K♣, J♦,  9♦, 7♥] 4
-# kicker: [K♣, 10♣, 9♦, 8♣] 4
-# [A♥, 9♦, 5♣, K♣, 2♥]
-# . . . . . .
-# [J♦, 7♥]
-# High Card
-# [A♥]
+#
+# d = Deck()
+# two1 = d.get(2)
+# two2 = d.get(2)
+# five = d.get(5)
+#
+# # two1 = [Card(13, 'H'), Card(2, 'C')]
+# # two2 = [Card(14, 'S'), Card(12, 'S')]
+# # five = [Card(6, 'D'), Card(12, 'S'), Card(13, 'C'), Card(6, 'C'), Card(8, 'C')]
+#
+# c1 = CombinationChecker(two1, five)
+# c2 = CombinationChecker(two2, five)
+#
+#
+# print(five)
+# print('. . . . . .')
+#
+# print('Pocket cards #1: ' + str(two1))
+# print(c1.combinations_rules[c1.combination]['name'])
+# print('Winning combination #1: ' + str(c1.combination_cards))
+# print('Possible kickers #1: ' + str(c1.kicker_cards))
+# #print(c1.power_cards)
+# print('Power #1: ' + str(c1.power))
+#
+# print('=============')
+#
+# print('Pocket cards #1: ' + str(two2))
+# print(c2.combinations_rules[c2.combination]['name'])
+# print('Winning combination #1: ' + str(c2.combination_cards))
+# print('Possible kickers #1: ' + str(c2.kicker_cards))
+# #print(c2.power_cards)
+# print('Power #1: ' + str(c2.power))
+#
+# # kicker: [K♣, J♦,  9♦, 7♥] 4
+# # kicker: [K♣, 10♣, 9♦, 8♣] 4
+# # [A♥, 9♦, 5♣, K♣, 2♥]
+# # . . . . . .
+# # [J♦, 7♥]
+# # High Card
+# # [A♥]
 # 54
 # =============
 # [10♣, 8♣]

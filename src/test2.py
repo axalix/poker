@@ -1,4 +1,5 @@
 from poker.deck import Deck
+from poker.card import Card
 from poker.combination_checker import CombinationChecker
 
 
@@ -6,6 +7,8 @@ players_number = 4
 
 d = Deck()
 five = d.get(5)
+#five = [Card(4, 'D'), Card(5, 'D'), Card(3, 'D'), Card(14, 'D')] # straight from '2'
+
 print(five)
 
 players_hands = []
