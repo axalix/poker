@@ -93,18 +93,18 @@ class CombinationChecker:
         self.pocket_cards = pocket_cards
         self.table_cards = table_cards
         self.seven_cards = Card.sort_desc(self.table_cards + self.pocket_cards)
+        self.calculate()
 
-        (self.combination, self.combination_cards, self.kicker_cards, self.power_cards, self.power) = self.process()
 
-
-    def process(self):
+    def calculate(self):
         """
         :rtype: list ' [combination, power_cards, power]
         """
         for combination in CombinationEnum:
             power_cards = self.test_combination(combination)
             if power_cards:
-                return power_cards
+                (self.combination, self.combination_cards, self.kicker_cards, self.power_cards, self.power) = power_cards
+                return
 
 
     def test_combination(self, combination):
