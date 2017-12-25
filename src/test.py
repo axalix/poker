@@ -12,38 +12,42 @@ from poker.deck import Card
 from poker.combination_checker import CombinationChecker
 from poker.enums.combination_enum import CombinationEnum
 
-#
-# counter = Counter()
-# i = 0
-# while True:
-#     i += 1
-#     d = Deck()
-#     two = d.get(2)
-#     five = d.get(5)
-#
-#     c = CombinationChecker(two, five)
-#
-#     # if c.combination == CombinationEnum.straight:
-#     #     print(i)
-#     #     print(five)
-#     #     print('. . . . . .')
-#     #
-#     #     print(two)
-#     #     print(c.combinations_rules[c.combination]['name'])
-#     #     print(c.kicker_cards)
-#     #     print(c.combination_cards)
-#     #     print(c.power)
-#     #     print("=================================")
-#     #     i = 0
-#
-#     counter[c.combinations_rules[c.combination]['name']] += 1
-#
-#     if i % 10000 == 0:
-#         print('i = ' + str(i))
-#         print(counter)
-#         print("=============================")
-#
-# exit(1)
+
+counter = Counter()
+i = 0
+while True:
+    i += 1
+    d = Deck()
+    two = d.get(2)
+    five = d.get(5)
+
+    c = CombinationChecker(two, five)
+
+    # if c.combination == CombinationEnum.straight:
+    #     print(i)
+    #     print(five)
+    #     print('. . . . . .')
+    #
+    #     print(two)
+    #     print(c.combinations_rules[c.combination]['name'])
+    #     print(c.kicker_cards)
+    #     print(c.combination_cards)
+    #     print(c.power)
+    #     print("=================================")
+    #     i = 0
+
+    counter[c.combinations_rules[c.combination]['name']] += 1
+
+    if i % 10000 == 0:
+        print('i = ' + str(i))
+        #print(counter)
+        d = {}
+        for k, v in counter.items():
+            d[k] = str(int((v / i) * 10000) / 100) + '%'
+        print(d)
+        #print("=============================")
+
+exit(1)
 
 d = Deck()
 cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from '2'

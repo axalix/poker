@@ -139,10 +139,9 @@ class CombinationChecker:
     # ------ Patterns and Helpers
 
     @classmethod
-    def select_same_suit(cls, cards, n):
+    def select_five_or_more_suited_cards(cls, cards):
         """
         :param cards: list of Card
-        :param n: int
         :rtype: list of Card
         """
         d = {}
@@ -154,16 +153,18 @@ class CombinationChecker:
         max_ = 0
         same_suit_cards = []
         for suit, suited_cards in d.items():
-            n = len(cards)
-            if n > max_:
-                max_ = n
+            suited_cards_count = len(suited_cards)
+            if suited_cards_count > max_:
+                max_ = suited_cards_count
                 same_suit_cards = suited_cards
 
-        return same_suit_cards[:n]
+        return same_suit_cards if len(same_suit_cards) > 4 else None
+
 
     @classmethod
     def high_rank(cls, seven_cards):
         return [seven_cards[0]]
+
 
     @classmethod
     def same_rank(cls, seven_cards, n):
@@ -182,6 +183,7 @@ class CombinationChecker:
             return list(filter(lambda x: x.rank == most_common[0][0], seven_cards))
         return None
 
+
     @classmethod
     def two_same_rank(cls, seven_cards):
         """
@@ -189,6 +191,7 @@ class CombinationChecker:
         :rtype: list of Card
         """
         return cls.same_rank(seven_cards, 2)
+
 
     @classmethod
     def two_same_rank_pairs(cls, seven_cards):
@@ -207,6 +210,7 @@ class CombinationChecker:
 
         return pair + second_pair
 
+
     @classmethod
     def three_same_rank(cls, seven_cards):
         """
@@ -214,6 +218,7 @@ class CombinationChecker:
         :rtype: list of Card
         """
         return cls.same_rank(seven_cards, 3)
+
 
     @classmethod
     def three_same_rank_two_same_rank(cls, seven_cards):
@@ -232,6 +237,7 @@ class CombinationChecker:
 
         return three + second_pair
 
+
     @classmethod
     def four_same_rank(cls, seven_cards):
         """
@@ -239,6 +245,7 @@ class CombinationChecker:
         :rtype: list of Card
         """
         return cls.same_rank(seven_cards, 4)
+
 
     @classmethod
     def five_in_order(cls, seven_cards):
@@ -271,13 +278,21 @@ class CombinationChecker:
 
     @classmethod
     def five_same_suit(cls, seven_cards):
-        same_suit_cards = CombinationChecker.select_same_suit(seven_cards, 5)
-        return CombinationChecker.select_same_suit(seven_cards, 5) if len(same_suit_cards) > 4 else None
+        five_or_more_suited_cards = CombinationChecker.select_five_or_more_suited_cards(seven_cards)
+        if not five_or_more_suited_cards:
+            return None
+
+        return five_or_more_suited_cards[:5]
+
 
     @classmethod
     def five_in_order_and_same_suit(cls, seven_cards):
-        same_suit_cards = CombinationChecker.select_same_suit(seven_cards, 7)
-        return cls.five_in_order(same_suit_cards) if len(same_suit_cards) > 4 else None
+        five_or_more_suited_cards = CombinationChecker.select_five_or_more_suited_cards(seven_cards)
+        if not five_or_more_suited_cards:
+            return None
+
+        return cls.five_in_order(five_or_more_suited_cards)
+
 
     @classmethod
     def tjqka_and_same_suit(cls, seven_cards):
