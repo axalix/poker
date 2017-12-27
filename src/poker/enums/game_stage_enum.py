@@ -3,9 +3,8 @@ from enum import IntEnum
 
 class GameStageEnum(IntEnum):
     welcome     = 1
-    blinds      = 2
-    preflop     = 3
-    flop        = 4
-    turn        = 5
-    river       = 6
-    winners     = 7
+    preflop     = 2
+    flop        = 3
+    turn        = 4
+    river       = 5
+    winners     = 6

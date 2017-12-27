@@ -3,15 +3,9 @@ from poker.poker_object import PokerObject
 
 class Player(PokerObject):
 
-    FOLD = 1
-    RAISE = 2
-    CALL = 3
-    CHECK = 4
-    ALL_IN = 5
-
     def __init__(self, name, balance):
-        self._name = name
-        self._balance = balance
+        self.name = name
+        self.balance = balance
 
     #------- Cards
 
@@ -20,16 +14,20 @@ class Player(PokerObject):
         :type pocket_cards: tuple
         :return:
         """
-        self._pocket_cards = pocket_cards
+        self.pocket_cards = pocket_cards
 
 
     #------- Balance
 
     def increase_balance(self, amount):
-        self._balance += amount
+        if amount < 0:
+            raise ValueError('Positive amount expected')
+        self.balance += amount
 
     def decrease_balance(self, amount):
-        self._balance -= amount
+        if amount < 0:
+            raise ValueError('Positive amount expected')
+        self.balance -= amount
 
 
     #------- Actions
