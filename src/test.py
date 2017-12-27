@@ -43,11 +43,24 @@ while True:
         #print(counter)
         d = {}
         for k, v in counter.items():
-            d[k] = str(int((v / i) * 10000) / 100) + '%'
+            d[k] = str(int((v / i) * 100000) / 1000) + '%'
         print(d)
         #print("=============================")
 
 exit(1)
+
+# 1 mil games
+# Pair: 44.678%
+# Two pairs: 23.691%
+# High Card: 17.443%
+# Three of a kind: 4.904%
+# Straight: 3.521%
+# Flush: 3.014%
+# Full House: 2.548%
+# Four of a kind: 0.164%
+# Straight Flush: 0.029%
+# Royal Flush: 0.003%
+
 
 d = Deck()
 cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] # straight from '2'

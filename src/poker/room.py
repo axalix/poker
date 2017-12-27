@@ -1,8 +1,9 @@
 from poker.game import Game
 from poker.player import Player
+from poker.poker_object import PokerObject
 
 
-class Room:
+class Room(PokerObject):
 
     def __init__(self, players):
         """

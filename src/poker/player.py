@@ -1,5 +1,7 @@
+from poker.poker_object import PokerObject
 
-class Player:
+
+class Player(PokerObject):
 
     FOLD = 1
     RAISE = 2

@@ -1,8 +1,9 @@
 import random
 from poker.card import Card
+from poker.poker_object import PokerObject
 
 
-class Deck:
+class Deck(PokerObject):
     @classmethod
     def __create_cards(cls):
         cards = []

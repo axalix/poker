@@ -1,8 +1,9 @@
 from poker.deck import Deck
 from poker.player import Player
+from poker.poker_object import PokerObject
 
 
-class Game:
+class Game(PokerObject):
     states = ('Preflop', 'Flop', 'Turn', 'River')
 
 

@@ -1,9 +1,10 @@
 from collections import Counter
 from poker.card import Card
 from poker.enums.combination_enum import CombinationEnum
+from poker.poker_object import PokerObject
 
 
-class CombinationChecker:
+class CombinationChecker(PokerObject):
     PATTERN_HIGH_RANK                       = 'high_rank'
     PATTERN_TWO_SAME_RANK                   = 'two_same_rank'
     PATTERN_TWO_SAME_RANK_PAIRS             = 'two_same_rank_pairs'

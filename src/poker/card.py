@@ -1,5 +1,7 @@
+from poker.poker_object import PokerObject
 
-class Card:
+
+class Card(PokerObject):
     ranks          = tuple(range(2, 15))
     ranks_names    = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
     ranks_to_names = dict(zip(ranks, ranks_names))
@@ -60,5 +62,3 @@ class Card:
     def __str__(self):
         return self.rank_name + self.suit_name
 
-    def __repr__(self):
-        return self.__str__()
