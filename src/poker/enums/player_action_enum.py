@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 
-class PlayerTurnEnum(IntEnum):
+class PlayerActionEnum(IntEnum):
     fold    = 1
     call    = 2
     check   = 3
