@@ -1,4 +1,3 @@
-
 class PokerObject:
 
     # https://stackoverflow.com/a/41454816/4621324
