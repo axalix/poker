@@ -69,6 +69,9 @@ class PokerTable(PokerObject):
             p.prepare()
 
     def next_participating_player(self):
+        """
+        :rtype: Player
+        """
         next_position = self._current_player_position
         if next_position >= len(self.participating_players):
             next_position = 0
@@ -94,11 +97,17 @@ class PokerTable(PokerObject):
         self.move_dealer_button()
 
         self.dealer = self.participating_players[self._dealer_button_position]
+        self.dealer.role = Player.ROLE_DEALER
+
         self._current_player_position = self._dealer_button_position
 
         self.small_blind_player = self.next_participating_player()
+        self.small_blind_player.role = Player.ROLE_SMALL_BLIND
+
         self.big_blind_player = self.next_participating_player()
+        self.big_blind_player.role = Player.ROLE_BIG_BLIND
 
 
     def _remove_current_participant(self):
         del(self.participating_players[self._current_player_position])
+

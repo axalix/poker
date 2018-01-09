@@ -1,6 +1,5 @@
 from poker.poker_object import PokerObject
 from poker.enums.game_stage_enum import GameStageEnum
-from poker.enums.player_action_enum import PlayerActionEnum
 from poker.combination_checker import CombinationChecker
 from poker.deck import Deck
 from poker.player import Player
@@ -18,7 +17,7 @@ class Game(PokerObject):
         :type id_: int
         :type table: PokerTable
         """
-        self.current_state = None
+        self.current_stage = None
         self.id_ = id_
         self.table = table
 
@@ -35,20 +34,20 @@ class Game(PokerObject):
     def play(self):
         self.assign_pocket_cards()
 
-        for self.current_state in self.game_state_iterator:
-            print("STATE {}".format(self.current_state))
-            getattr(self, 'stage_' + self.current_state.name)()
+        for self.current_stage in self.game_state_iterator:
+            print("STATE {}".format(self.current_stage))
+            getattr(self, 'stage_' + self.current_stage.name)()
 
 
         print("=================================================================")
 
 
     def play_round(self):
-        while not self.table.next_participating_player().accepted_bet(self.current_state, self.current_bet):
+        while not self.table.next_participating_player().accepted_bet(self.current_stage, self.current_bet):
             self.request_player_reaction()
             print("\n- - - - - - - - -\n")
 
-        print(self.current_state.name)
+        print(self.current_stage.name)
         print(self.table.cards)
 
     # ------- Player
@@ -56,28 +55,23 @@ class Game(PokerObject):
     def request_player_reaction(self):
         player = self.table.current_participating_player()
 
-        role = {
-            self.table.dealer: 'D',
-            self.table.small_blind_player: 'SB',
-            self.table.big_blind_player: 'BB'
-        }.get(player, '')
-        print("Player {} #{}. Balance ${}: ".format(role, player.account.name, player.chips))
-        print("Your cards {}".format(player.pocket_cards))
 
-        action, amount = player.request_action(self.current_state, self.current_bet)
+        reaction = player.request_action(self.current_stage, self.current_bet)
+        action = reaction['action']
+        player_bet = reaction['bet']
 
-        if action == PlayerActionEnum.fold:
+        if action == Player.ACTION_FOLD:
             self.table.player_fold()
             return
 
-        if action == PlayerActionEnum.fold:
+        if action == Player.ACTION_ALL_IN:
             self.table.player_all_in()
             return
 
-        if amount:
-            self.charge(player, amount)
-            if amount > self.current_bet:
-                self.current_bet = amount
+        if player_bet:
+            self.charge(player, player_bet)
+            if player_bet > self.current_bet:
+                self.current_bet = player_bet
 
 
 
@@ -85,7 +79,7 @@ class Game(PokerObject):
 
     def assign_pocket_cards(self):
         for player in self.table.players:
-            player.assign_cards(self.deck.get(2))
+            player.pocket_cards(self.deck.get(2))
 
 
     # ------- Money
@@ -130,7 +124,7 @@ class Game(PokerObject):
         # TODO
         players_hands = []
         for p in self.table.potential_winners():
-            players_hands.append([p.pocket_cards, CombinationChecker(p.pocket_cards, self.table_cards)])
+            players_hands.append([p.cards, CombinationChecker(p.pocket_cards, self.table.cards)])
 
         players_hands_sorted = sorted(players_hands, key=lambda x: x[1].power, reverse=True)
 
