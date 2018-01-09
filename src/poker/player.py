@@ -12,45 +12,22 @@ class Player(PokerObject):
 
     def __init__(self, account, chips):
         """
-        :type room: Room
         :type account: Account
         :type chips: int
         """
         self.account = account
         self.chips = chips
 
-        self.bet_ = 0
-        self.state = self.FOLDED
         self.pocket_cards = []
 
     #------- Game
 
-    def reset_bet(self):
-        self.bet_ = 0
-
-    def reset_state(self):
-        self.state = self.REACTING
-
-    def reset_pocket_cards(self):
+    def prepare(self):
         self.pocket_cards = []
-
-    def reset(self):
-        self.reset_bet()
-        self.reset_state()
-        self.reset_pocket_cards()
-
-    #------- States
-
-    def folded(self):
-        return self.state == self.FOLDED
-
-    def all_ined(self):
-        return self.state == self.ALL_INED
-
 
     #------- Cards
 
-    def assign_poket_cards(self, pocket_cards):
+    def assign_cards(self, pocket_cards):
         """
         :type pocket_cards: tuple
         :return:
@@ -62,7 +39,7 @@ class Player(PokerObject):
 
     def bet(self, amount):
         self.decrease_chips(amount)
-        self.bet_ = amount
+
 
 
     def increase_chips(self, amount):
@@ -79,7 +56,7 @@ class Player(PokerObject):
 
     #------- Interface
 
-    def __ask(self, possible_actions, call_to):
+    def __ask(self, possible_actions, current_game_state, current_game_bet):
         var = input("Please enter one of these actions: {}".format(list(map(lambda x:x.name, possible_actions))))
 
         # TODO: only allow actions based on "possible_actions"
@@ -102,24 +79,29 @@ class Player(PokerObject):
 
         if var == 'C':
             print('CALL OR CHECK') # TOTO
-            return (PlayerActionEnum.raise_, call_to)
+            return (PlayerActionEnum.check, current_game_bet)
 
     #------- Actions & Reactors
 
-    def request_action(self, call_to):
+    def request_action(self, current_game_state, current_game_bet):
+
+
+        # bet_or_more = self.current_bet - player.bet_
+        # print("Bet ${} or more".format(bet_or_more))
+
         possible_actions = [
             PlayerActionEnum.fold
         ]
 
-        if call_to == 0:
+        if current_game_bet == 0:
             possible_actions.append(PlayerActionEnum.check)
         else:
-            if self.chips > call_to - self.bet_:
+            if self.chips > current_game_bet - self.bet_:
                 possible_actions += [PlayerActionEnum.call, PlayerActionEnum.raise_]
             else:
                 possible_actions.append(PlayerActionEnum.all_in)
 
-        return self.__ask(possible_actions, call_to)
+        return self.__ask(possible_actions, current_game_state, current_game_bet)
 
 
     def react_to_fold(self):

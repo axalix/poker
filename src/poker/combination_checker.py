@@ -17,7 +17,7 @@ class CombinationChecker(PokerObject):
     PATTERN_TJQKA_AND_SAME_SUIT             = 'tjqka_and_same_suit'
 
     # 14-digits notations: 0 - 13. A = 13, 2 = 0
-    MAX_5 = 537824 # AAAAK: 13 * 14^4 + 13 * 14^3 + 13 * 14^2 + 13 * 14^1 + 13 * 12^0 + 1
+    MAX_5 = 537824 # AAAAK: 13 * 14^4 + 13 * 14^3 + 13 * 14^2 + 13 * 14^1 + 13 * 14^0 + 1
 
     # J - 11
     # Q - 12
