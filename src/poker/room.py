@@ -16,31 +16,32 @@ class Room(PokerObject):
 
 
     def play(self):
-        while len(self.players) > 1:
-            self.prepare()
-            game = Game(self.game_id, self.table).play()
-            game.play()
+        while True:
+            if not self.prepare():
+                break
+
+            Game(self.game_id, self.table).play()
 
         print('Game over')
 
 
     def prepare(self):
         self.game_id += 1
-        self.prepare_players()
-        self.table.prepare(self.players)
-
-
-    def prepare_players(self):
         self._remove_bankrupts()
-        self._add_players([])
+        self._add_new_players([])
+
+        if len(self.players) < 2:
+            return False
+
+        self.table.prepare(self.players)
+        return True
+
 
 
     def _remove_bankrupts(self):
-        for i, player in enumerate(self.players):
-            if player.chips <= 0:
-                del self.players[i]
+        self.players = [ p for p in self.players if p.chips > 0]
 
 
-    def _add_players(self, waiting_to_join_players):
+    def _add_new_players(self, waiting_to_join_players):
         # TODO: self.players X self.waiting_to_join_players = Ø
         pass

@@ -6,11 +6,12 @@ paul = Account('Paul', 100)
 mike = Account('Mike', 200)
 matt = Account('Matt', 300)
 alex = Account('Alex', 400)
-ppaul = Player(paul, 100)
-pmike = Player(mike, 100)
-pmatt = Player(matt, 100)
-palex = Player(alex, 100)
 
-r = Room([ppaul, pmike, pmatt, palex])
+r = Room([
+    Player(paul, 100),
+    Player(mike, 100),
+    Player(matt, 100),
+    Player(alex, 100)
+])
 
 r.play()

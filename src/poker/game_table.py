@@ -8,7 +8,6 @@ class GameTable(PokerObject):
         self.players = []
         self.participating_players = []
         self.allined_players = []
-        self.folded_players = []
 
         self.dealer = None
         self.small_blind_player = None
@@ -22,12 +21,6 @@ class GameTable(PokerObject):
         self.turn = []
         self.river = []
 
-    # dealer is always a first player in a list
-    def move_dealer_button(self):
-        self._dealer_button_position = 0 if self._dealer_button_position is None else self._dealer_button_position + 1
-        if self._dealer_button_position > len(self.participating_players):
-            self._dealer_button_position = 0
-
     def prepare(self, players):
         """
         :type players: list of Player
@@ -35,9 +28,8 @@ class GameTable(PokerObject):
         """
         # players
         self.players = players
-        self.participating_players = self.players
+        self.participating_players = self.players[:] # clone instead of reference
         self.allined_players = []
-        self.folded_players = []
         self._prepare_players()
         self._reset_players_positions()
 
@@ -45,6 +37,13 @@ class GameTable(PokerObject):
         self.flop = []
         self.turn = []
         self.river = []
+
+
+    # dealer is always a first player in a list
+    def move_dealer_button(self):
+        self._dealer_button_position = 0 if self._dealer_button_position is None else self._dealer_button_position + 1
+        if self._dealer_button_position > len(self.participating_players):
+            self._dealer_button_position = 0
 
 
     @property
@@ -75,26 +74,22 @@ class GameTable(PokerObject):
         #print('pos #' + str(self._current_player_position))
         return self.participating_players[self._current_player_position]
 
-    def player_fold(self):
-        self.folded_players.append(self.current_participating_player())
-        self._remove_current_participant()
-        return self
 
-    def player_all_in(self):
+    def withdraw_player(self):
+        del (self.participating_players[self._current_player_position])
+
+    def all_in_player(self):
         self.allined_players.append(self.current_participating_player())
-        self._remove_current_participant()
-        return self
+        self.withdraw_player()
 
     # -----------------------
 
 
     def _reset_players_positions(self):
         self.move_dealer_button()
-
+        self._current_player_position = self._dealer_button_position
         self.dealer = self.participating_players[self._dealer_button_position]
         self.dealer.role = Player.ROLE_DEALER
-
-        self._current_player_position = self._dealer_button_position
 
         self.small_blind_player = self.next_participating_player()
         self.small_blind_player.role = Player.ROLE_SMALL_BLIND
@@ -102,9 +97,10 @@ class GameTable(PokerObject):
         self.big_blind_player = self.next_participating_player()
         self.big_blind_player.role = Player.ROLE_BIG_BLIND
 
+
         # print('D' +self.dealer.account.name)
         # print('SB' +self.small_blind_player.account.name)
         # print('BB' +self.big_blind_player.account.name)
 
-    def _remove_current_participant(self):
-        del (self.participating_players[self._current_player_position])
+    def make_dealer_current_player(self):
+        self._current_player_position = self._dealer_button_position

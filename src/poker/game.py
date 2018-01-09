@@ -26,49 +26,33 @@ class Game(PokerObject):
         self.pot = 0
         self.current_bet = 0
 
-        self.game_state_iterator = iter(GameStageEnum)
+        self.game_states_iterator = iter(GameStageEnum)
 
     # ------- Game Process
 
-    # game loop
     def play(self):
-        self.assign_pocket_cards()
-
-        for self.current_stage in self.game_state_iterator:
-            # print("STAGE {}".format(self.current_stage))
-            print(self.current_stage.name)
-            getattr(self, 'stage_' + self.current_stage.name)()
+        # main loop: preflop -> flop -> turn -> river -> winners
+        for self.current_stage in self.game_states_iterator:
+            self.play_stage()
 
 
         print("=================================================================")
 
+    def play_stage(self):
+        print(self.current_stage.name)
+        getattr(self, 'stage_' + self.current_stage.name)()
+
 
     def play_round(self):
-        while not self.table.next_participating_player().accepted_bet(self.current_stage, self.current_bet):
-            print(self.table.cards)
-            self.request_player_reaction()
+        print(self.table.cards)
+        while len(self.table.participating_players) > 0 and \
+              self.table.next_participating_player().reaction_required(self.current_stage, self.current_bet):
+            print("Table cards: " + str(self.table.cards))
+            self.request_player_action()
             print("\n- - - - - - - - -\n")
 
         self.current_bet = 0
-
-    # ------- Player
-
-    def request_player_reaction(self):
-        player = self.table.current_participating_player()
-
-        action, amount = player.request_action(self.current_stage, self.current_bet)
-
-        if action == Player.ACTION_FOLD:
-            return self.table.player_fold()
-
-        if action == Player.ACTION_ALL_IN:
-            return self.table.player_all_in()
-
-        if amount:
-            self.charge(player, amount, action)
-            if amount > self.current_bet:
-                self.current_bet = amount
-
+        self.table.make_dealer_current_player()
 
 
     # ------- Player
@@ -77,21 +61,39 @@ class Game(PokerObject):
         for player in self.table.players:
             player.pocket_cards = self.deck.get(2)
 
+    def request_player_action(self):
+        player = self.table.current_participating_player()
+
+        action, amount = player.request_action(self.current_stage, self.current_bet)
+
+        if action == Player.ACTION_FOLD:
+            self.table.withdraw_player()
+            return
+
+        if action == Player.ACTION_ALL_IN:
+            self.table.all_in_player()
+
+        if amount > self.current_bet:
+            self.current_bet = amount
+
+        self.pot += amount
 
     # ------- Money
 
-    def charge(self, player, amount, action):
-        """
-        :type player: Player
-        :type amount: int
-        """
-        self.pot += amount
-        player.bet(self.current_stage, action, amount)
-
 
     def charge_for_blinds(self):
-        self.charge(self.table.small_blind_player, self.SMALL_BLIND, None)
-        self.charge(self.table.big_blind_player, self.BIG_BLIND, None)
+
+        small_blind_amount = self.table.small_blind_player.charge(self.current_stage, Player.ACTION_SMALL_BLIND, self.SMALL_BLIND)
+        # TODO: if player is all-iner, withdraw him from a table
+        # if self.table.small_blind_player.previous_action(self.current_stage) == Player.ACTION_ALL_IN:
+        #     self.table.small_blind_player.all_in_player()
+
+        big_blind_amount = self.table.big_blind_player.charge(self.current_stage, Player.ACTION_BIG_BLIND, self.BIG_BLIND)
+        # TODO: if player is all-iner, withdraw him from a table
+        # if self.table.big_blind_player.previous_action(self.current_stage) == Player.ACTION_ALL_IN:
+        #     self.table.big_blind_player.all_in_player()
+
+        self.pot = small_blind_amount + big_blind_amount
         self.current_bet = self.BIG_BLIND
 
 
@@ -102,6 +104,7 @@ class Game(PokerObject):
 
     def stage_preflop(self):
         self.charge_for_blinds()
+        self.assign_pocket_cards()
         self.play_round()
 
     def stage_flop(self):

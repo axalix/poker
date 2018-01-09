@@ -12,6 +12,8 @@ class Player(PokerObject):
     ROLE_SMALL_BLIND = 'SB'
     ROLE_BIG_BLIND = 'BB'
 
+    ACTION_SMALL_BLIND = 'S'
+    ACTION_BIG_BLIND = 'B'
     ACTION_FOLD = 'F'
     ACTION_CALL = 'C'
     ACTION_CHECK = 'K'
@@ -35,33 +37,34 @@ class Player(PokerObject):
     # ------- Game
 
     def prepare(self):
+        self.state = self.STATE_REACTING
+        self.role = self.ROLE_PLAYER
         self.pot_contribution = 0
         self._pocket_cards = []
         self.actions_map = {}
 
-    def update_actions_map(self, current_game_stage, action, bet):
+    def remember_decision(self, current_game_stage, action, amount):
         self.actions_map[current_game_stage] = {
             'action': action,
-            'bet': bet
+            'amount': amount
         }
 
-    def get_bet(self, current_game_stage):
+    def previous_bet(self, current_game_stage):
         if current_game_stage not in self.actions_map:
-            self.actions_map[current_game_stage] = {
-                'action': None,
-                'bet': 0
-            }
+            return None
 
-        return self.actions_map[current_game_stage]['bet']
+        return self.actions_map[current_game_stage]['amount']
 
-    def accepted_bet(self, current_game_stage, current_game_bet):
-        # TODO: update doc
-        """
-        :param current_game_stage:
-        :param current_game_bet:
-        :rtype: bool
-        """
-        return self.get_bet(current_game_stage) == current_game_bet and self.actions_map[current_game_stage]['action']
+    def previous_action(self, current_game_stage):
+        if current_game_stage not in self.actions_map:
+            return None
+
+        return self.actions_map[current_game_stage]['action']
+
+    def reaction_required(self, current_game_stage, current_game_bet):
+        return self.previous_bet(current_game_stage) != current_game_bet or \
+               self.actions_map[current_game_stage]['action'] in [self.ACTION_SMALL_BLIND, self.ACTION_BIG_BLIND]
+
 
     # ------- Cards
 
@@ -83,7 +86,6 @@ class Player(PokerObject):
 
     # ------- Chips
 
-
     def increase_chips(self, amount):
         if amount < 0:
             raise ValueError('Positive amount expected')
@@ -96,10 +98,17 @@ class Player(PokerObject):
 
     # ------- Game
 
-    def bet(self, current_game_stage, action, amount):
-        self.update_actions_map(current_game_stage, action, amount)
+    def charge(self, current_game_stage, action, amount):
+        amount = min(amount, self.chips)
+        if amount >= self.chips:
+            self.state = self.STATE_ALL_INED
+            action = self.ACTION_ALL_IN
+            print('ALL IN')
+
+        self.remember_decision(current_game_stage, action, amount)
         self.decrease_chips(amount)
         self.pot_contribution += amount
+        return amount
 
     # ------- Interface
 
@@ -139,14 +148,24 @@ class Player(PokerObject):
             self.ACTION_ALL_IN
         ]
 
-        min_call = current_game_bet - self.get_bet(current_game_stage)
+        previous_bet = self.previous_bet(current_game_stage)
+        if previous_bet is None:
+            previous_bet = 0
 
-        if min_call == 0:
-            possible_actions += [self.ACTION_CHECK, self.ACTION_RAISE]
-        elif self.chips > min_call:
-            possible_actions += [self.ACTION_CALL, self.ACTION_RAISE]
+        min_call = min(self.chips, current_game_bet - previous_bet)
 
-        return self._ask(possible_actions, current_game_bet, min_call)
+        if self.chips > min_call:
+            possible_actions.append(self.ACTION_RAISE)
+
+            if min_call == 0:
+                possible_actions.append(self.ACTION_CHECK)
+            else:
+                possible_actions.append(self.ACTION_CALL)
+
+        action, amount = self._ask(possible_actions, current_game_bet, min_call)
+
+        self.charge(current_game_stage, action, amount)
+        return self.previous_action(current_game_stage), amount
 
     # ------- Reactors
 
