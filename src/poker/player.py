@@ -29,18 +29,17 @@ class Player(PokerObject):
         self.chips = chips
 
         self.pot_contribution = 0
-        self.pocket_cards = []
+        self._pocket_cards = []
         self.actions_map = {}
 
     # ------- Game
 
     def prepare(self):
         self.pot_contribution = 0
-        self.pocket_cards = []
+        self._pocket_cards = []
         self.actions_map = {}
 
-    def increment_actions_map(self, current_game_stage, bet, action):
-        self.bet(bet)
+    def update_actions_map(self, current_game_stage, action, bet):
         self.actions_map[current_game_stage] = {
             'action': action,
             'bet': bet
@@ -66,15 +65,21 @@ class Player(PokerObject):
 
     # ------- Cards
 
+    @property
+    def pocket_cards(self):
+        return self._pocket_cards
+
+    @pocket_cards.setter
     def pocket_cards(self, cards):
         """
         :type cards: list of Card
         :return:
         """
-        self.pocket_cards = cards
+        self._pocket_cards = cards
 
+    @property
     def cards(self):
-        return self.pocket_cards
+        return self._pocket_cards
 
     # ------- Chips
 
@@ -88,15 +93,17 @@ class Player(PokerObject):
         if amount < 0:
             raise ValueError('Positive amount expected')
         self.chips -= amount
-        self.pot_contribution += amount
 
     # ------- Game
 
-    bet = decrease_chips  # TODO: check
+    def bet(self, current_game_stage, action, amount):
+        self.update_actions_map(current_game_stage, action, amount)
+        self.decrease_chips(amount)
+        self.pot_contribution += amount
 
     # ------- Interface
 
-    def _ask(self, possible_actions, current_game_stage, current_game_bet, min_call):
+    def _ask(self, possible_actions, current_game_bet, min_call):
         # impossible case, but lets keep it here while debugging
         if not self.STATE_REACTING:
             return
@@ -107,22 +114,22 @@ class Player(PokerObject):
 
         action = None
         while action not in possible_actions:
-            action = input("Please enter one of these actions: {}".format(", ".join(possible_actions)))
+            action = input("Please enter one of these actions: {}\n".format(", ".join(possible_actions)))
 
         if action == 'F':
-            return self.do_call(current_game_stage)
+            return self.do_fold()
 
         if action == 'A':
-            return self.do_all_in(current_game_stage)
+            return self.do_all_in()
 
         if action == 'R':
-            return self.do_raise(current_game_stage, min_call)
+            return self.do_raise(min_call)
 
         if action == 'C':
-            return self.do_call(current_game_stage)
+            return self.do_call(min_call)
 
         if action == 'K':
-            return self.do_check(current_game_stage, current_game_bet)
+            return self.do_check(current_game_bet)
 
     # -------
 
@@ -134,41 +141,37 @@ class Player(PokerObject):
 
         min_call = current_game_bet - self.get_bet(current_game_stage)
 
-        if current_game_bet == 0:
-            possible_actions.append(self.ACTION_CHECK)
+        if min_call == 0:
+            possible_actions += [self.ACTION_CHECK, self.ACTION_RAISE]
         elif self.chips > min_call:
             possible_actions += [self.ACTION_CALL, self.ACTION_RAISE]
 
-        self._ask(possible_actions, current_game_stage, current_game_bet, min_call)
-
-        return self.actions_map[current_game_stage]
+        return self._ask(possible_actions, current_game_bet, min_call)
 
     # ------- Reactors
 
-    def do_fold(self, current_game_stage):
+    def do_fold(self):
         print('FOLD')
         self.state = self.STATE_FOLDED
-        self.increment_actions_map(current_game_stage, 0, self.ACTION_FOLD)
-        return self.state
+        return self.ACTION_FOLD, 0
 
-    def do_all_in(self, current_game_stage):
-        print('ALL INN')
+    def do_all_in(self):
+        print('ALL IN')
         self.state = self.STATE_ALL_INED
-        self.increment_actions_map(current_game_stage, self.chips, self.ACTION_ALL_IN)
-        return self.state
+        return self.ACTION_ALL_IN, self.chips
 
-    def do_raise(self, current_game_stage, min_call):
+    def do_raise(self, min_call):
         print('RAISE')
         amount = -1
         while amount < min_call or amount > self.chips:
             amount = int(input("How much? (Min: {})".format(min_call)))
 
-        self.increment_actions_map(current_game_stage, amount, self.ACTION_RAISE)
+        return self.ACTION_RAISE, amount
 
-    def do_call(self, current_game_stage):
+    def do_call(self, min_call):
         print('CALL')
-        self.increment_actions_map(current_game_stage, 0, self.ACTION_CALL)
+        return self.ACTION_CALL, min_call
 
-    def do_check(self, current_game_stage, current_game_bet):
+    def do_check(self, current_game_bet):
         print('CHECK')
-        self.increment_actions_map(current_game_stage, current_game_bet, self.ACTION_CHECK)
+        return self.ACTION_CHECK, current_game_bet

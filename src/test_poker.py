@@ -11,6 +11,6 @@ pmike = Player(mike, 100)
 pmatt = Player(matt, 100)
 palex = Player(alex, 100)
 
-r = Room([ppaul, pmatt, pmike, palex])
+r = Room([ppaul, pmike, pmatt, palex])
 
 r.play()

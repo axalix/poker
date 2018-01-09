@@ -1,7 +1,7 @@
 from poker.game import Game
 from poker.player import Player
 from poker.poker_object import PokerObject
-from poker_table import PokerTable
+from poker.game_table import GameTable
 
 
 class Room(PokerObject):
@@ -12,7 +12,7 @@ class Room(PokerObject):
         """
         self.game_id = 0
         self.players = players
-        self.table = PokerTable()
+        self.table = GameTable()
 
 
     def play(self):

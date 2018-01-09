@@ -1,8 +1,8 @@
 from poker.player import Player
-from poker_object import PokerObject
+from poker.poker_object import PokerObject
 
 
-class PokerTable(PokerObject):
+class GameTable(PokerObject):
     def __init__(self):
         # players
         self.players = []
@@ -46,15 +46,8 @@ class PokerTable(PokerObject):
         self.turn = []
         self.river = []
 
-    def flop(self, cards):
-        self.flop = cards
 
-    def turn(self, card):
-        self.turn = card
-
-    def river(self, card):
-        self.river = card
-
+    @property
     def cards(self):
         return self.flop + self.turn + self.river
 
@@ -72,23 +65,25 @@ class PokerTable(PokerObject):
         """
         :rtype: Player
         """
-        next_position = self._current_player_position
-        if next_position >= len(self.participating_players):
-            next_position = 0
+        self._current_player_position += 1
+        if self._current_player_position >= len(self.participating_players):
+            self._current_player_position = 0
 
-        self._current_player_position = next_position
         return self.current_participating_player()
 
     def current_participating_player(self):
+        #print('pos #' + str(self._current_player_position))
         return self.participating_players[self._current_player_position]
 
     def player_fold(self):
         self.folded_players.append(self.current_participating_player())
         self._remove_current_participant()
+        return self
 
     def player_all_in(self):
         self.allined_players.append(self.current_participating_player())
         self._remove_current_participant()
+        return self
 
     # -----------------------
 
@@ -107,7 +102,9 @@ class PokerTable(PokerObject):
         self.big_blind_player = self.next_participating_player()
         self.big_blind_player.role = Player.ROLE_BIG_BLIND
 
+        # print('D' +self.dealer.account.name)
+        # print('SB' +self.small_blind_player.account.name)
+        # print('BB' +self.big_blind_player.account.name)
 
     def _remove_current_participant(self):
-        del(self.participating_players[self._current_player_position])
-
+        del (self.participating_players[self._current_player_position])

@@ -3,7 +3,7 @@ from poker.enums.game_stage_enum import GameStageEnum
 from poker.combination_checker import CombinationChecker
 from poker.deck import Deck
 from poker.player import Player
-from poker_table import PokerTable
+from poker.game_table import GameTable
 
 
 class Game(PokerObject):
@@ -15,7 +15,7 @@ class Game(PokerObject):
     def __init__(self, id_, table):
         """
         :type id_: int
-        :type table: PokerTable
+        :type table: GameTable
         """
         self.current_stage = None
         self.id_ = id_
@@ -35,7 +35,8 @@ class Game(PokerObject):
         self.assign_pocket_cards()
 
         for self.current_stage in self.game_state_iterator:
-            print("STATE {}".format(self.current_stage))
+            # print("STAGE {}".format(self.current_stage))
+            print(self.current_stage.name)
             getattr(self, 'stage_' + self.current_stage.name)()
 
 
@@ -44,34 +45,29 @@ class Game(PokerObject):
 
     def play_round(self):
         while not self.table.next_participating_player().accepted_bet(self.current_stage, self.current_bet):
+            print(self.table.cards)
             self.request_player_reaction()
             print("\n- - - - - - - - -\n")
 
-        print(self.current_stage.name)
-        print(self.table.cards)
+        self.current_bet = 0
 
     # ------- Player
 
     def request_player_reaction(self):
         player = self.table.current_participating_player()
 
-
-        reaction = player.request_action(self.current_stage, self.current_bet)
-        action = reaction['action']
-        player_bet = reaction['bet']
+        action, amount = player.request_action(self.current_stage, self.current_bet)
 
         if action == Player.ACTION_FOLD:
-            self.table.player_fold()
-            return
+            return self.table.player_fold()
 
         if action == Player.ACTION_ALL_IN:
-            self.table.player_all_in()
-            return
+            return self.table.player_all_in()
 
-        if player_bet:
-            self.charge(player, player_bet)
-            if player_bet > self.current_bet:
-                self.current_bet = player_bet
+        if amount:
+            self.charge(player, amount, action)
+            if amount > self.current_bet:
+                self.current_bet = amount
 
 
 
@@ -79,23 +75,23 @@ class Game(PokerObject):
 
     def assign_pocket_cards(self):
         for player in self.table.players:
-            player.pocket_cards(self.deck.get(2))
+            player.pocket_cards = self.deck.get(2)
 
 
     # ------- Money
 
-    def charge(self, player, amount):
+    def charge(self, player, amount, action):
         """
         :type player: Player
         :type amount: int
         """
         self.pot += amount
-        player.bet(amount)
+        player.bet(self.current_stage, action, amount)
 
 
     def charge_for_blinds(self):
-        self.charge(self.table.small_blind_player, self.SMALL_BLIND)
-        self.charge(self.table.big_blind_player, self.BIG_BLIND)
+        self.charge(self.table.small_blind_player, self.SMALL_BLIND, None)
+        self.charge(self.table.big_blind_player, self.BIG_BLIND, None)
         self.current_bet = self.BIG_BLIND
 
 
@@ -109,22 +105,22 @@ class Game(PokerObject):
         self.play_round()
 
     def stage_flop(self):
-        self.table.flop(self.deck.get(3))
+        self.table.flop = self.deck.get(3)
         self.play_round()
 
     def stage_turn(self):
-        self.table.turn(self.deck.get(1))
+        self.table.turn = self.deck.get(1)
         self.play_round()
 
     def stage_river(self):
-        self.table.river(self.deck.get(1))
+        self.table.river = self.deck.get(1)
         self.play_round()
 
     def stage_winners(self):
         # TODO
         players_hands = []
         for p in self.table.potential_winners():
-            players_hands.append([p.cards, CombinationChecker(p.pocket_cards, self.table.cards)])
+            players_hands.append([p.cards, CombinationChecker(p.cards, self.table.cards)])
 
         players_hands_sorted = sorted(players_hands, key=lambda x: x[1].power, reverse=True)
 
