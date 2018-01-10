@@ -43,7 +43,7 @@ class Game(PokerObject):
 
     def play_round(self):
         print(self.table.cards)
-        while self.table.next_participating_player().action_required(self.current_stage, self.current_bet):
+        while self.table.next_player().action_required(self.current_stage, self.current_bet):
             print("Table cards: " + str(self.table.cards))
             self.request_player_action()
             print("\n- - - - - - - - -\n")
@@ -58,7 +58,7 @@ class Game(PokerObject):
             player.pocket_cards = self.deck.get(2)
 
     def request_player_action(self):
-        player = self.table.current_participating_player()
+        player = self.table.current_player()
 
         # min_raise = self.BIG_BLIND_AMOUNT
         # if self
@@ -111,7 +111,7 @@ class Game(PokerObject):
     def stage_winners(self):
         # TODO
         players_hands = []
-        for p in self.table.participating_players:
+        for p in self.table.players:
             players_hands.append([p.cards, CombinationChecker(p.cards, self.table.cards)])
 
         players_hands_sorted = sorted(players_hands, key=lambda x: x[1].power, reverse=True)

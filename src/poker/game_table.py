@@ -4,9 +4,7 @@ from poker.poker_object import PokerObject
 
 class GameTable(PokerObject):
     def __init__(self):
-        # players
         self.players = []
-        self.participating_players = []
 
         self.dealer = None
         self.small_blind_player = None
@@ -25,9 +23,7 @@ class GameTable(PokerObject):
         :type players: list of Player
         :return:
         """
-        # players
-        self.players = players
-        self.participating_players = self.players[:]  # clone instead of reference
+        self.players = players[:]  # clone instead of reference
         self._prepare_players()
         self._reset_players_positions()
 
@@ -39,7 +35,7 @@ class GameTable(PokerObject):
     # dealer is always a first player in a list
     def move_dealer_button(self):
         self._dealer_button_position = 0 if self._dealer_button_position is None else self._dealer_button_position + 1
-        if self._dealer_button_position > len(self.participating_players):
+        if self._dealer_button_position > len(self.players):
             self._dealer_button_position = 0
 
     @property
@@ -48,22 +44,22 @@ class GameTable(PokerObject):
 
 
     def _prepare_players(self):
-        for p in self.participating_players:
+        for p in self.players:
             p.prepare()
 
-    def next_participating_player(self):
+    def next_player(self):
         """
         :rtype: Player
         """
         self._current_player_position += 1
-        if self._current_player_position >= len(self.participating_players):
+        if self._current_player_position >= len(self.players):
             self._current_player_position = 0
 
-        return self.current_participating_player()
+        return self.current_player()
 
-    def current_participating_player(self):
+    def current_player(self):
         # print('pos #' + str(self._current_player_position))
-        return self.participating_players[self._current_player_position]
+        return self.players[self._current_player_position]
 
 
     # -----------------------
@@ -72,13 +68,13 @@ class GameTable(PokerObject):
     def _reset_players_positions(self):
         self.move_dealer_button()
         self._current_player_position = self._dealer_button_position
-        self.dealer = self.participating_players[self._dealer_button_position]
+        self.dealer = self.players[self._dealer_button_position]
         self.dealer.role = Player.ROLE_DEALER
 
-        self.small_blind_player = self.next_participating_player()
+        self.small_blind_player = self.next_player()
         self.small_blind_player.role = Player.ROLE_SMALL_BLIND
 
-        self.big_blind_player = self.next_participating_player()
+        self.big_blind_player = self.next_player()
         self.big_blind_player.role = Player.ROLE_BIG_BLIND
 
 

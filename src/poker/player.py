@@ -64,7 +64,6 @@ class Player(PokerObject):
 
         return self.actions_map[current_game_stage]['amount']
 
-
     def action_required(self, current_game_stage, current_game_bet):
         return self.state == self.STATE_REACTING and (
             self.get_charge(current_game_stage) != current_game_bet or
@@ -114,9 +113,9 @@ class Player(PokerObject):
 
         return self.track_charge(current_game_stage, action, amount)
 
-    # ------- Interface
+    # ------- Interaction
 
-    def _ask(self, possible_actions, current_game_bet, min_call):
+    def _ask(self, possible_actions, min_call):
         # impossible case, but lets keep it here while debugging
         if not self.STATE_REACTING:
             return
@@ -142,12 +141,12 @@ class Player(PokerObject):
             return self.do_call(min_call)
 
         if action == 'K':
-            return self.do_check(current_game_bet)
+            return self.do_check()
 
     # -------
 
     def request_action(self, current_game_stage, current_game_bet):
-        print(self.actions_map)
+        # print(self.actions_map)
         possible_actions = [
             self.ACTION_FOLD,
             self.ACTION_ALL_IN
@@ -158,9 +157,9 @@ class Player(PokerObject):
             previous_bet = 0
 
         min_call = min(self.chips, current_game_bet - previous_bet)
-        print("current_game_bet {}".format(current_game_bet))
-        print("previous_bet {}".format(previous_bet))
-        print("self.chips {}".format(self.chips))
+        # print("current_game_bet {}".format(current_game_bet))
+        # print("previous_bet {}".format(previous_bet))
+        # print("self.chips {}".format(self.chips))
 
         if self.chips > min_call:
             possible_actions.append(self.ACTION_RAISE)
@@ -170,15 +169,9 @@ class Player(PokerObject):
             else:
                 possible_actions.append(self.ACTION_CALL)
 
-        action, amount = self._ask(possible_actions, current_game_bet, min_call)
+        action, amount = self._ask(possible_actions, min_call)
 
-
-
-        amount = self.charge(current_game_stage, action, amount)
-        print(self.actions_map)
-
-        return amount
-
+        return self.charge(current_game_stage, action, amount)
 
     # ------- Reactors
 
@@ -204,6 +197,6 @@ class Player(PokerObject):
         print('CALL')
         return self.ACTION_CALL, min_call
 
-    def do_check(self, current_game_bet):
+    def do_check(self):
         print('CHECK')
         return self.ACTION_CHECK, 0
