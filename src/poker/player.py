@@ -1,5 +1,6 @@
 from poker.account import Account
 from poker.poker_object import PokerObject
+from poker.enums.game_stage_enum import GameStageEnum
 
 
 class Player(PokerObject):
@@ -115,14 +116,15 @@ class Player(PokerObject):
 
     # ------- Interaction
 
-    def _ask(self, possible_actions, min_call):
+    def _ask(self, possible_actions, call_amount, min_raise_amount):
         # impossible case, but lets keep it here while debugging
         if not self.STATE_REACTING:
             return
 
+
         print("Player {} #{}. Balance ${}: ".format(self.role, self.account.name, self.chips))
         print("Your cards {}".format(self.pocket_cards))
-        print("Bet ${} or more".format(min_call))
+        print("Calling ${}".format(call_amount))
 
         action = None
         while action not in possible_actions:
@@ -135,17 +137,17 @@ class Player(PokerObject):
             return self.do_all_in()
 
         if action == 'R':
-            return self.do_raise(min_call)
+            return self.do_raise(call_amount, min_raise_amount)
 
         if action == 'C':
-            return self.do_call(min_call)
+            return self.do_call(call_amount)
 
         if action == 'K':
             return self.do_check()
 
     # -------
 
-    def request_action(self, current_game_stage, current_game_bet):
+    def request_action(self, current_game_stage, current_game_bet, current_game_raise):
         # print(self.actions_map)
         possible_actions = [
             self.ACTION_FOLD,
@@ -156,20 +158,29 @@ class Player(PokerObject):
         if previous_bet is None:
             previous_bet = 0
 
-        min_call = min(self.chips, current_game_bet - previous_bet)
+        call_amount = min(self.chips, current_game_bet - previous_bet)
+
+        # min_raise_amount = big_blind_amount
+        # if current_game_stage == GameStageEnum.preflop:
+        #     min_raise_amount = 2 * big_blind_amount
+        #
+        # if current_game_bet >= min_raise_amount:
+        # min_raise_amount = current_game_bet * 2
+
+        
         # print("current_game_bet {}".format(current_game_bet))
         # print("previous_bet {}".format(previous_bet))
         # print("self.chips {}".format(self.chips))
 
-        if self.chips > min_call:
+        if call_amount == 0:
+            possible_actions.append(self.ACTION_CHECK)
+        elif self.chips > call_amount:
+            possible_actions.append(self.ACTION_CALL)
+
+        if  self.chips - call_amount >= current_game_raise:
             possible_actions.append(self.ACTION_RAISE)
 
-            if min_call == 0:
-                possible_actions.append(self.ACTION_CHECK)
-            else:
-                possible_actions.append(self.ACTION_CALL)
-
-        action, amount = self._ask(possible_actions, min_call)
+        action, amount = self._ask(possible_actions, call_amount, current_game_raise)
 
         return self.charge(current_game_stage, action, amount)
 
@@ -185,17 +196,17 @@ class Player(PokerObject):
         self.state = self.STATE_ALL_INED
         return self.ACTION_ALL_IN, self.chips
 
-    def do_raise(self, min_call):
+    def do_raise(self, call_amount, min_raise_amount):
         print('RAISE')
         amount = -1
-        while amount < min_call or amount > self.chips:
-            amount = int(input("How much? (Min: {})".format(min_call)))
+        while amount < min_raise_amount or amount > self.chips:
+            amount = int(input("How much? (Min: ${}) on top of another ${}, so you will be betting ${} or more: ".format(min_raise_amount, call_amount, min_raise_amount + call_amount)))
 
-        return self.ACTION_RAISE, amount
+        return self.ACTION_RAISE, call_amount + amount
 
-    def do_call(self, min_call):
+    def do_call(self, call_amount):
         print('CALL')
-        return self.ACTION_CALL, min_call
+        return self.ACTION_CALL, call_amount
 
     def do_check(self):
         print('CHECK')

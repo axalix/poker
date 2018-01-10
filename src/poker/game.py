@@ -7,8 +7,8 @@ from poker.poker_object import PokerObject
 
 
 class Game(PokerObject):
-    SMALL_BLIND_AMOUNT = 1
-    BIG_BLIND_AMOUNT = 2
+    SMALL_BLIND_AMOUNT = 2
+    BIG_BLIND_AMOUNT = 4
 
     current_bet = 0
 
@@ -25,6 +25,7 @@ class Game(PokerObject):
 
         self.pot = 0
         self.current_bet = 0
+        self.current_raise = 0
 
         self.game_states_iterator = iter(GameStageEnum)
 
@@ -49,6 +50,7 @@ class Game(PokerObject):
             print("\n- - - - - - - - -\n")
 
         self.current_bet = 0
+        self.current_raise = self.BIG_BLIND_AMOUNT
         self.table.make_dealer_current_player()
 
     # ------- Player
@@ -63,9 +65,17 @@ class Game(PokerObject):
         # min_raise = self.BIG_BLIND_AMOUNT
         # if self
 
-        amount = player.request_action(self.current_stage, self.current_bet)
+        amount = player.request_action(self.current_stage, self.current_bet, self.current_raise)
 
         if amount > self.current_bet:
+            new_raise = amount - self.current_bet
+
+            # If the previous all-in raise amount was less than the minimum raise,
+            # then the minimum raise is equal to the previous minimum raise.
+            # The minimum legal raise is equal to the previous raise amount.
+            if new_raise > self.current_raise:
+                self.current_raise = new_raise
+
             self.current_bet = amount
 
         self.pot += amount
@@ -85,6 +95,7 @@ class Game(PokerObject):
 
         self.pot = small_blind_amount + big_blind_amount
         self.current_bet = self.BIG_BLIND_AMOUNT
+        self.current_raise = self.BIG_BLIND_AMOUNT
 
     # ------- Actions
 
