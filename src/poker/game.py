@@ -1,9 +1,9 @@
-from poker.poker_object import PokerObject
-from poker.enums.game_stage_enum import GameStageEnum
 from poker.combination_checker import CombinationChecker
 from poker.deck import Deck
-from poker.player import Player
+from poker.enums.game_stage_enum import GameStageEnum
 from poker.game_table import GameTable
+from poker.player import Player
+from poker.poker_object import PokerObject
 
 
 class Game(PokerObject):
@@ -35,25 +35,21 @@ class Game(PokerObject):
         for self.current_stage in self.game_states_iterator:
             self.play_stage()
 
-
         print("=================================================================")
 
     def play_stage(self):
         print(self.current_stage.name)
         getattr(self, 'stage_' + self.current_stage.name)()
 
-
     def play_round(self):
         print(self.table.cards)
-        while len(self.table.participating_players) > 0 and \
-              self.table.next_participating_player().reaction_required(self.current_stage, self.current_bet):
+        while self.table.next_participating_player().action_required(self.current_stage, self.current_bet):
             print("Table cards: " + str(self.table.cards))
             self.request_player_action()
             print("\n- - - - - - - - -\n")
 
         self.current_bet = 0
         self.table.make_dealer_current_player()
-
 
     # ------- Player
 
@@ -64,14 +60,7 @@ class Game(PokerObject):
     def request_player_action(self):
         player = self.table.current_participating_player()
 
-        action, amount = player.request_action(self.current_stage, self.current_bet)
-
-        if action == Player.ACTION_FOLD:
-            self.table.withdraw_player()
-            return
-
-        if action == Player.ACTION_ALL_IN:
-            self.table.all_in_player()
+        amount = player.request_action(self.current_stage, self.current_bet)
 
         if amount > self.current_bet:
             self.current_bet = amount
@@ -83,19 +72,14 @@ class Game(PokerObject):
 
     def charge_for_blinds(self):
 
-        small_blind_amount = self.table.small_blind_player.charge(self.current_stage, Player.ACTION_SMALL_BLIND, self.SMALL_BLIND)
-        # TODO: if player is all-iner, withdraw him from a table
-        # if self.table.small_blind_player.previous_action(self.current_stage) == Player.ACTION_ALL_IN:
-        #     self.table.small_blind_player.all_in_player()
+        small_blind_amount = self.table.small_blind_player.charge(self.current_stage, Player.ACTION_SMALL_BLIND,
+                                                                  self.SMALL_BLIND)
 
-        big_blind_amount = self.table.big_blind_player.charge(self.current_stage, Player.ACTION_BIG_BLIND, self.BIG_BLIND)
-        # TODO: if player is all-iner, withdraw him from a table
-        # if self.table.big_blind_player.previous_action(self.current_stage) == Player.ACTION_ALL_IN:
-        #     self.table.big_blind_player.all_in_player()
+        big_blind_amount = self.table.big_blind_player.charge(self.current_stage, Player.ACTION_BIG_BLIND,
+                                                              self.BIG_BLIND)
 
         self.pot = small_blind_amount + big_blind_amount
         self.current_bet = self.BIG_BLIND
-
 
     # ------- Actions
 
@@ -122,7 +106,7 @@ class Game(PokerObject):
     def stage_winners(self):
         # TODO
         players_hands = []
-        for p in self.table.potential_winners():
+        for p in self.table.participating_players:
             players_hands.append([p.cards, CombinationChecker(p.cards, self.table.cards)])
 
         players_hands_sorted = sorted(players_hands, key=lambda x: x[1].power, reverse=True)
