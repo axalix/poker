@@ -14,15 +14,12 @@ class Room(PokerObject):
         self.table = GameTable()
 
     def play(self):
-        while True:
-            if not self.prepare():
-                break
-
+        while self.prepared():
             Game(self.game_id, self.table).play()
 
         print('Game over')
 
-    def prepare(self):
+    def prepared(self):
         self.game_id += 1
         self._remove_bankrupts()
         self._add_new_players([])
