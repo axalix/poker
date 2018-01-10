@@ -7,8 +7,8 @@ from poker.poker_object import PokerObject
 
 
 class Game(PokerObject):
-    SMALL_BLIND = 1
-    BIG_BLIND = 2
+    SMALL_BLIND_AMOUNT = 1
+    BIG_BLIND_AMOUNT = 2
 
     current_bet = 0
 
@@ -60,6 +60,9 @@ class Game(PokerObject):
     def request_player_action(self):
         player = self.table.current_participating_player()
 
+        # min_raise = self.BIG_BLIND_AMOUNT
+        # if self
+
         amount = player.request_action(self.current_stage, self.current_bet)
 
         if amount > self.current_bet:
@@ -72,14 +75,16 @@ class Game(PokerObject):
 
     def charge_for_blinds(self):
 
-        small_blind_amount = self.table.small_blind_player.charge(self.current_stage, Player.ACTION_SMALL_BLIND,
-                                                                  self.SMALL_BLIND)
+        small_blind_amount = self.table.small_blind_player.charge(self.current_stage,
+                                                                  Player.ACTION_SMALL_BLIND,
+                                                                  self.SMALL_BLIND_AMOUNT)
 
-        big_blind_amount = self.table.big_blind_player.charge(self.current_stage, Player.ACTION_BIG_BLIND,
-                                                              self.BIG_BLIND)
+        big_blind_amount = self.table.big_blind_player.charge(self.current_stage,
+                                                              Player.ACTION_BIG_BLIND,
+                                                              self.BIG_BLIND_AMOUNT)
 
         self.pot = small_blind_amount + big_blind_amount
-        self.current_bet = self.BIG_BLIND
+        self.current_bet = self.BIG_BLIND_AMOUNT
 
     # ------- Actions
 
