@@ -71,6 +71,10 @@ class GameTable(PokerObject):
         # print('pos #' + str(self._current_player_position))
         return self.players[self._current_player_position]
 
+    @property
+    def reacting_players_count(self):
+        return len([x for x in self.players if x.is_reacting()])
+
 
     # -----------------------
 

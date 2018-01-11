@@ -1,4 +1,5 @@
 from functools import reduce
+
 from poker.deck import Deck
 from poker.enums.game_stage_enum import GameStageEnum
 from poker.evaluator import Evaluator
@@ -40,15 +41,15 @@ class Game(PokerObject):
         print("=================================================================")
 
     def play_stage(self):
-        print(self.current_stage.name)
+        print(self.current_stage.name.upper())
         getattr(self, 'stage_' + self.current_stage.name)()
 
     def play_round(self):
         print(self.table.cards)
 
         while True:
-            p = self.table.next_reacting_player()
-            if not p or not p.action_required(self.current_stage, self.current_bet):
+            player = self.table.next_reacting_player()
+            if not player or not player.action_required(self.current_stage, self.current_bet):
                 break
 
             print("Table cards: " + str(self.table.cards))
@@ -68,7 +69,7 @@ class Game(PokerObject):
     def request_player_action(self):
         player = self.table.current_player()
 
-        amount = player.request_action(self.current_stage, self.current_bet, self.current_raise)
+        amount = player.request_action(self.current_stage, self.current_bet, self.current_raise, self.table.reacting_players_count)
 
         if amount > self.current_bet:
             new_raise = amount - self.current_bet
@@ -87,7 +88,6 @@ class Game(PokerObject):
 
 
     def charge_for_blinds(self):
-
         small_blind_amount = self.table.small_blind_player.charge(self.current_stage,
                                                                   Player.ACTION_SMALL_BLIND,
                                                                   self.SMALL_BLIND_AMOUNT)
@@ -97,21 +97,22 @@ class Game(PokerObject):
                                                               self.BIG_BLIND_AMOUNT)
 
         self.pot = small_blind_amount + big_blind_amount
-        self.current_bet = self.BIG_BLIND_AMOUNT
-        self.current_raise = self.BIG_BLIND_AMOUNT
 
-    def _use_pot_contribution(self, players, contribution):
+    @staticmethod
+    def _use_pot_contribution(players, contribution):
         result = 0
-        for w in players:
-            amount = min(contribution, w.pot_distribution)
-            w.pot_distribution -= amount
+        for p in players:
+            amount = min(contribution, p.pot_distribution)
+            p.pot_distribution -= amount
             result += amount
         return result
 
     def distribute_pot(self, winners):
         if len(winners) == 1:
-            self.pot = 0
             winners[0].won_amount = self.pot
+            winners[0].pot_distribution = self.pot
+            winners[0].increase_chips(self.pot)
+            self.pot = 0
             return
 
         for winner in winners:
@@ -133,23 +134,21 @@ class Game(PokerObject):
             if self.pot == 0:
                 break
 
-                # split
             group = sorted(group, key=lambda x: x.pot_contribution, reverse=True)
-            max_pot_contribution = reduce(lambda x , y: max(x, y), map(lambda x: x.pot_distribution, group))
+            max_pot_contribution = reduce(lambda x, y: max(x, y), map(lambda x: x.pot_distribution, group))
             if max_pot_contribution == 0:
                 continue
 
-            group_amount = reduce(lambda x , y: x + y, map(lambda x: x.pot_contribution, group))
+            group_amount = reduce(lambda x, y: x + y, map(lambda x: x.pot_contribution, group))
             if group_amount == 0:
                 continue
 
-            shared_amount = self._use_pot_contribution(winners, max_pot_contribution)
+            shared_amount = Game._use_pot_contribution(winners, max_pot_contribution)
 
             for p in group:
-                won_amount = int(shared_amount * p.pot_contribution / group_amount)
+                won_amount = int(shared_amount * p.pot_contribution / group_amount)  # split
                 p.won_amount = won_amount
                 self.pot -= won_amount
-
 
         for w in winners:
             w.increase_chips(w.won_amount)
@@ -158,10 +157,12 @@ class Game(PokerObject):
 
     def stage_welcome(self):
         print("Lets begin poker game #{}".format(self.id_))
+        self.assign_pocket_cards()
 
     def stage_preflop(self):
         self.charge_for_blinds()
-        self.assign_pocket_cards()
+        self.current_bet = self.BIG_BLIND_AMOUNT
+        self.current_raise = self.BIG_BLIND_AMOUNT
         self.play_round()
 
     def stage_flop(self):

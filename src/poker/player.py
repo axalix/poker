@@ -6,6 +6,7 @@ class Player(PokerObject):
     STATE_REACTING = 1
     STATE_FOLDED = 2
     STATE_ALL_INED = 3
+    STATE_LAST_PLAYER = 4
 
     ROLE_PLAYER = 'P'
     ROLE_DEALER = 'D'
@@ -144,7 +145,7 @@ class Player(PokerObject):
 
         action = None
         while action not in possible_actions:
-            action = input("Please enter one of these actions: {}\n".format(", ".join(possible_actions)))
+            action = 'A' #input("Please enter one of these actions: {}\n".format(", ".join(possible_actions)))
 
         if action == 'F':
             return self.do_fold()
@@ -163,7 +164,7 @@ class Player(PokerObject):
 
     # -------
 
-    def request_action(self, current_game_stage, current_game_bet, current_game_raise):
+    def request_action(self, current_game_stage, current_game_bet, current_game_raise, reacting_players_count):
         # print(self.actions_map)
         possible_actions = [
             self.ACTION_FOLD,
@@ -181,6 +182,11 @@ class Player(PokerObject):
         # print("self.chips {}".format(self.chips))
 
         if call_amount == 0:
+            if reacting_players_count == 1:
+                # last player is playing and there's no need to raise or call => no need to ask questions
+                self.state = self.STATE_LAST_PLAYER
+                return 0
+
             possible_actions.append(self.ACTION_CHECK)
         elif self.chips > call_amount:
             possible_actions.append(self.ACTION_CALL)
