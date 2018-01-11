@@ -28,13 +28,16 @@ class Player(PokerObject):
         self.role = self.ROLE_PLAYER
         self.state = self.STATE_REACTING
         self.account = account
-        self.chips = chips
 
+        self.chips = chips
         self.pot_contribution = 0
+        self.won_amount = 0
+
         self._pocket_cards = []
         self.actions_map = {}
 
         self.evaluator = None
+
 
     # ------- Game
 
@@ -42,9 +45,11 @@ class Player(PokerObject):
         self.state = self.STATE_REACTING
         self.role = self.ROLE_PLAYER
         self.pot_contribution = 0
+        self.won_amount = 0
         self._pocket_cards = []
         self.actions_map = {}
         self.evaluator = None
+
 
     def _remember_charge(self, current_game_stage, action, amount):
         self.actions_map[current_game_stage] = {
@@ -120,6 +125,9 @@ class Player(PokerObject):
 
     def is_folded(self):
         return self.state == Player.STATE_FOLDED
+
+    def is_all_ined(self):
+        return self.state == Player.STATE_ALL_INED
 
     # ------- Interaction
 

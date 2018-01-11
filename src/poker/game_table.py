@@ -35,7 +35,7 @@ class GameTable(PokerObject):
     # dealer is always a first player in a list
     def move_dealer_button(self):
         self._dealer_button_position = 0 if self._dealer_button_position is None else self._dealer_button_position + 1
-        if self._dealer_button_position > len(self.players):
+        if self._dealer_button_position >= len(self.players):
             self._dealer_button_position = 0
 
     @property

@@ -54,7 +54,6 @@ class Game(PokerObject):
             self.request_player_action()
             print("\n- - - - - - - - -\n")
 
-
         self.current_bet = 0
         self.current_raise = self.BIG_BLIND_AMOUNT
         self.table.make_dealer_current_player()
@@ -100,6 +99,47 @@ class Game(PokerObject):
         self.current_bet = self.BIG_BLIND_AMOUNT
         self.current_raise = self.BIG_BLIND_AMOUNT
 
+    def distribute_pot(self, winners):
+        if len(winners) == 1:
+            self.pot = 0
+            winners[0].won_amount = self.pot
+            return
+
+        groups = [[winners[0]]]
+        current_hand_power = winners[0].evaluator.power
+        group_idx = 0
+
+        for winner in winners[1:]:
+            if current_hand_power == winner.evaluator.power:
+                groups[group_idx].append(winner)
+            else:
+                current_hand_power = winner.evaluator.power
+                group_idx += 1
+                groups.append([winner])
+
+        for group in groups:
+            if self.pot == 0:
+                break
+
+            # split
+            if len(group) > 1:
+                group = sorted(group, key=lambda x: x.pot_contribution, reverse=True)
+                count = len(group)
+            else:
+                pot_contribution = group[0].pot_contribution
+                won_amount = 0
+                for w in winners:
+                    amount = min(pot_contribution, w.pot_contribution)
+                    w.pot_contribution -= amount
+                    won_amount += amount
+
+                won_amount = min(won_amount, self.pot)
+                group[0].won_amount = won_amount
+                self.pot -= won_amount
+
+        for w in winners:
+            w.increase_chips(w.won_amount)
+
     # ------- Actions
 
     def stage_welcome(self):
@@ -132,13 +172,12 @@ class Game(PokerObject):
 
         print("=================================================================")
         print(self.table.cards)
+
+        self.distribute_pot(winners)
+
         for winner in winners:
             e = winner.evaluator
             print(
-                '{}, {}.  {}: {} => {}, {}'.format(winner.account.name, winner.pot_contribution, e.name,
-                                                   winner.pocket_cards, e.combination_cards,
-                                                   e.power))
-
-            # print(
-            #     '{} {} - {} => {}!, {} . . . {} '.format(winner.account.name, winner.pocket_cards, e.name,
-            #                                              e.combination_cards, e.power, e.kicker_cards))
+                '{}, ${}.  {}: {} => {}, {}'.format(winner.account.name, winner.won_amount, e.name,
+                                                    winner.pocket_cards, e.combination_cards,
+                                                    e.power))
