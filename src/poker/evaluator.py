@@ -4,7 +4,7 @@ from poker.enums.combination_enum import CombinationEnum
 from poker.poker_object import PokerObject
 
 
-class CombinationChecker(PokerObject):
+class Evaluator(PokerObject):
     PATTERN_HIGH_RANK                       = 'high_rank'
     PATTERN_TWO_SAME_RANK                   = 'two_same_rank'
     PATTERN_TWO_SAME_RANK_PAIRS             = 'two_same_rank_pairs'
@@ -23,7 +23,7 @@ class CombinationChecker(PokerObject):
     # Q - 12
     # K - 13
     # A - 14
-    combinations_rules = {
+    evaluator = {
         CombinationEnum.high_card: {
             'name': 'High Card',
             'pattern': PATTERN_HIGH_RANK,
@@ -94,26 +94,26 @@ class CombinationChecker(PokerObject):
         self.pocket_cards = pocket_cards
         self.table_cards = table_cards
         self.seven_cards = Card.sort_desc(self.table_cards + self.pocket_cards)
-        self.calculate()
+        self.process()
 
 
-    def calculate(self):
+    def process(self):
         """
         :rtype: list ' [combination, power_cards, power]
         """
         for combination in CombinationEnum:
-            power_cards = self.test_combination(combination)
+            power_cards = self.evaluate(combination)
             if power_cards:
                 (self.combination, self.combination_cards, self.kicker_cards, self.power_cards, self.power) = power_cards
                 return
 
 
-    def test_combination(self, combination):
+    def evaluate(self, combination):
         """
         :type combination: CombinationEnum
         :rtype: list
         """
-        combination_rule = self.combinations_rules[combination]
+        combination_rule = self.evaluator[combination]
         pattern = combination_rule['pattern']
 
         combination_cards = getattr(self, pattern)(self.seven_cards)
@@ -135,6 +135,10 @@ class CombinationChecker(PokerObject):
         """
         addition_cards_number = 5 - len(combination_cards)
         return Card.diff(self.seven_cards, combination_cards)[:addition_cards_number]
+
+    @property
+    def name(self):
+        return self.evaluator[self.combination]['name']
 
 
     # ------ Patterns and Helpers
@@ -279,7 +283,7 @@ class CombinationChecker(PokerObject):
 
     @classmethod
     def five_same_suit(cls, seven_cards):
-        five_or_more_suited_cards = CombinationChecker.select_five_or_more_suited_cards(seven_cards)
+        five_or_more_suited_cards = Evaluator.select_five_or_more_suited_cards(seven_cards)
         if not five_or_more_suited_cards:
             return None
 
@@ -288,7 +292,7 @@ class CombinationChecker(PokerObject):
 
     @classmethod
     def five_in_order_and_same_suit(cls, seven_cards):
-        five_or_more_suited_cards = CombinationChecker.select_five_or_more_suited_cards(seven_cards)
+        five_or_more_suited_cards = Evaluator.select_five_or_more_suited_cards(seven_cards)
         if not five_or_more_suited_cards:
             return None
 

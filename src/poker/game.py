@@ -1,6 +1,6 @@
-from poker.combination_checker import CombinationChecker
 from poker.deck import Deck
 from poker.enums.game_stage_enum import GameStageEnum
+from poker.evaluator import Evaluator
 from poker.game_table import GameTable
 from poker.player import Player
 from poker.poker_object import PokerObject
@@ -44,10 +44,16 @@ class Game(PokerObject):
 
     def play_round(self):
         print(self.table.cards)
-        while self.table.next_player().action_required(self.current_stage, self.current_bet):
+
+        while True:
+            p = self.table.next_reacting_player()
+            if not p or not p.action_required(self.current_stage, self.current_bet):
+                break
+
             print("Table cards: " + str(self.table.cards))
             self.request_player_action()
             print("\n- - - - - - - - -\n")
+
 
         self.current_bet = 0
         self.current_raise = self.BIG_BLIND_AMOUNT
@@ -61,9 +67,6 @@ class Game(PokerObject):
 
     def request_player_action(self):
         player = self.table.current_player()
-
-        # min_raise = self.BIG_BLIND_AMOUNT
-        # if self
 
         amount = player.request_action(self.current_stage, self.current_bet, self.current_raise)
 
@@ -120,16 +123,22 @@ class Game(PokerObject):
         self.play_round()
 
     def stage_winners(self):
-        # TODO
-        players_hands = []
         for p in self.table.players:
-            players_hands.append([p.cards, CombinationChecker(p.cards, self.table.cards)])
+            if p.is_folded():
+                continue
+            p.evaluator = Evaluator(p.cards, self.table.cards)
 
-        players_hands_sorted = sorted(players_hands, key=lambda x: x[1].power, reverse=True)
+        winners = sorted([x for x in self.table.players if x.evaluator], key=lambda x: x.evaluator.power, reverse=True)
 
-        for player_hand in players_hands_sorted:
-            two = player_hand[0]
-            c = player_hand[1]
+        print("=================================================================")
+        print(self.table.cards)
+        for winner in winners:
+            e = winner.evaluator
+            print(
+                '{}, {}.  {}: {} => {}, {}'.format(winner.account.name, winner.pot_contribution, e.name,
+                                                   winner.pocket_cards, e.combination_cards,
+                                                   e.power))
 
-            print('{}: {} => {}!, {} . . . {} '.format(c.combinations_rules[c.combination]['name'], two,
-                                                       c.combination_cards, c.power, c.kicker_cards))
+            # print(
+            #     '{} {} - {} => {}!, {} . . . {} '.format(winner.account.name, winner.pocket_cards, e.name,
+            #                                              e.combination_cards, e.power, e.kicker_cards))

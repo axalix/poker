@@ -1,6 +1,5 @@
 from poker.account import Account
 from poker.poker_object import PokerObject
-from poker.enums.game_stage_enum import GameStageEnum
 
 
 class Player(PokerObject):
@@ -35,6 +34,8 @@ class Player(PokerObject):
         self._pocket_cards = []
         self.actions_map = {}
 
+        self.evaluator = None
+
     # ------- Game
 
     def prepare(self):
@@ -43,6 +44,7 @@ class Player(PokerObject):
         self.pot_contribution = 0
         self._pocket_cards = []
         self.actions_map = {}
+        self.evaluator = None
 
     def _remember_charge(self, current_game_stage, action, amount):
         self.actions_map[current_game_stage] = {
@@ -66,8 +68,7 @@ class Player(PokerObject):
         return self.actions_map[current_game_stage]['amount']
 
     def action_required(self, current_game_stage, current_game_bet):
-        return self.state == self.STATE_REACTING and (
-            self.get_charge(current_game_stage) != current_game_bet or
+        return (self.get_charge(current_game_stage) != current_game_bet or
             self.actions_map[current_game_stage]['action'] in [self.ACTION_SMALL_BLIND, self.ACTION_BIG_BLIND])
 
     # ------- Cards
@@ -114,13 +115,18 @@ class Player(PokerObject):
 
         return self.track_charge(current_game_stage, action, amount)
 
+    def is_reacting(self):
+        return self.state == Player.STATE_REACTING
+
+    def is_folded(self):
+        return self.state == Player.STATE_FOLDED
+
     # ------- Interaction
 
     def _ask(self, possible_actions, call_amount, min_raise_amount):
         # impossible case, but lets keep it here while debugging
         if not self.STATE_REACTING:
             return
-
 
         print("Player {} #{}. Balance ${}: ".format(self.role, self.account.name, self.chips))
         print("Your cards {}".format(self.pocket_cards))
@@ -160,14 +166,6 @@ class Player(PokerObject):
 
         call_amount = min(self.chips, current_game_bet - previous_bet)
 
-        # min_raise_amount = big_blind_amount
-        # if current_game_stage == GameStageEnum.preflop:
-        #     min_raise_amount = 2 * big_blind_amount
-        #
-        # if current_game_bet >= min_raise_amount:
-        # min_raise_amount = current_game_bet * 2
-
-        
         # print("current_game_bet {}".format(current_game_bet))
         # print("previous_bet {}".format(previous_bet))
         # print("self.chips {}".format(self.chips))
@@ -177,7 +175,7 @@ class Player(PokerObject):
         elif self.chips > call_amount:
             possible_actions.append(self.ACTION_CALL)
 
-        if  self.chips - call_amount >= current_game_raise:
+        if self.chips - call_amount >= current_game_raise:
             possible_actions.append(self.ACTION_RAISE)
 
         action, amount = self._ask(possible_actions, call_amount, current_game_raise)
@@ -200,7 +198,9 @@ class Player(PokerObject):
         print('RAISE')
         amount = -1
         while amount < min_raise_amount or amount > self.chips:
-            amount = int(input("How much? (Min: ${}) on top of another ${}, so you will be betting ${} or more: ".format(min_raise_amount, call_amount, min_raise_amount + call_amount)))
+            amount = int(input(
+                "How much? (Min: ${}) on top of another ${}, so you will be betting ${} or more: ".format(
+                    min_raise_amount, call_amount, min_raise_amount + call_amount)))
 
         return self.ACTION_RAISE, call_amount + amount
 

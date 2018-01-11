@@ -57,7 +57,17 @@ class GameTable(PokerObject):
 
         return self.current_player()
 
+    def next_reacting_player(self, counter = 1):
+        next_player = self.next_player()
+        if next_player.is_reacting():
+            return next_player
+
+        return None if counter == len(self.players) else self.next_reacting_player(counter + 1)
+
     def current_player(self):
+        """
+        :rtype: Player
+        """
         # print('pos #' + str(self._current_player_position))
         return self.players[self._current_player_position]
 

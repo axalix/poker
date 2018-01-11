@@ -18,11 +18,11 @@ class Card(PokerObject):
         :type suit: str
         """
         self.rank = rank
-        self.rank_name = 'A' if rank == 1 else Card.ranks_to_names[rank]
+        self.rank_name = 'A' if rank == 1 else self.ranks_to_names[rank]
 
 
         self.suit = suit
-        self.suit_name = Card.suits_to_names[suit]
+        self.suit_name = self.suits_to_names[suit]
 
     def is_ace(self):
         return self.rank == 14

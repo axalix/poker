@@ -9,7 +9,7 @@ alex = Account('Alex', 400)
 
 r = Room([
     Player(paul, 100),
-    Player(mike, 100),
+    Player(mike, 50),
     Player(matt, 100),
     Player(alex, 100)
 ])

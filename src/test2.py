@@ -1,6 +1,6 @@
 from poker.deck import Deck
 from poker.card import Card
-from poker.combination_checker import CombinationChecker
+from poker.evaluator import Evaluator
 
 
 players_number = 4
@@ -14,7 +14,7 @@ print(five)
 players_hands = []
 for i in range(1, players_number + 1):
     two = d.get(2)
-    players_hands.append([two, CombinationChecker(two, five)])
+    players_hands.append([two, Evaluator(two, five)])
 
 players_hands_sorted = sorted(players_hands, key=lambda x: x[1].power, reverse = True)
 
@@ -25,10 +25,10 @@ for player_hand in players_hands_sorted:
 
 
     # print('Pocket cards #{}: {} '.format(i, two))
-    # print(c.combinations_rules[c.combination]['name'])
+    # print(c.evaluator[c.combination]['name'])
     # print('Winning combination #{}: {} '.format(i, c.combination_cards))
     # print('Possible kickers #{}: {} '.format(i, c.kicker_cards))
     # print('Power #{}: {}'.format(i, c.power))
 
-    print('{}: {} => {}!, {} . . . {} '.format(c.combinations_rules[c.combination]['name'], two, c.combination_cards, c.power, c.kicker_cards))
+    print('{}: {} => {}!, {} . . . {} '.format(c.evaluator[c.combination]['name'], two, c.combination_cards, c.power, c.kicker_cards))
 

@@ -9,7 +9,7 @@ from collections import Counter
 
 from poker.deck import Deck
 from poker.deck import Card
-from poker.combination_checker import CombinationChecker
+from poker.evaluator import Evaluator
 from poker.enums.combination_enum import CombinationEnum
 
 
@@ -21,7 +21,7 @@ while True:
     two = d.get(2)
     five = d.get(5)
 
-    c = CombinationChecker(two, five)
+    c = Evaluator(two, five)
 
     # if c.combination == CombinationEnum.straight:
     #     print(i)
@@ -29,14 +29,14 @@ while True:
     #     print('. . . . . .')
     #
     #     print(two)
-    #     print(c.combinations_rules[c.combination]['name'])
+    #     print(c.evaluator[c.combination]['name'])
     #     print(c.kicker_cards)
     #     print(c.combination_cards)
     #     print(c.power)
     #     print("=================================")
     #     i = 0
 
-    counter[c.combinations_rules[c.combination]['name']] += 1
+    counter[c.evaluator[c.combination]['name']] += 1
 
     if i % 10000 == 0:
         print('i = ' + str(i))
@@ -74,7 +74,7 @@ cards = [Card(6, 'D'), Card(5, 'D'), Card(4, 'D'), Card(3, 'D'), Card(2, 'D')] #
 # # cards = [Card(2, 'D'), Card(2, 'D')]
 # #
 # # print(cards)
-# print(CombinationChecker.power(cards, CombinationEnum.straight))
+# print(Evaluator.power(cards, CombinationEnum.straight))
 print(Card.power(cards))
 
 #
@@ -89,15 +89,15 @@ print(Card.power(cards))
 # # two2 = [Card(14, 'S'), Card(12, 'S')]
 # # five = [Card(6, 'D'), Card(12, 'S'), Card(13, 'C'), Card(6, 'C'), Card(8, 'C')]
 #
-# c1 = CombinationChecker(two1, five)
-# c2 = CombinationChecker(two2, five)
+# c1 = Evaluator(two1, five)
+# c2 = Evaluator(two2, five)
 #
 #
 # print(five)
 # print('. . . . . .')
 #
 # print('Pocket cards #1: ' + str(two1))
-# print(c1.combinations_rules[c1.combination]['name'])
+# print(c1.evaluator[c1.combination]['name'])
 # print('Winning combination #1: ' + str(c1.combination_cards))
 # print('Possible kickers #1: ' + str(c1.kicker_cards))
 # #print(c1.power_cards)
@@ -106,7 +106,7 @@ print(Card.power(cards))
 # print('=============')
 #
 # print('Pocket cards #1: ' + str(two2))
-# print(c2.combinations_rules[c2.combination]['name'])
+# print(c2.evaluator[c2.combination]['name'])
 # print('Winning combination #1: ' + str(c2.combination_cards))
 # print('Possible kickers #1: ' + str(c2.kicker_cards))
 # #print(c2.power_cards)
