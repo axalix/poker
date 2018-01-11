@@ -83,10 +83,10 @@ class GameTable(PokerObject):
         self.dealer.role = Player.ROLE_DEALER
 
         self.small_blind_player = self.next_player()
-        self.small_blind_player.role = Player.ROLE_SMALL_BLIND
+        self.small_blind_player.blind_flag = Player.BLIND_FLAG_SMALL
 
         self.big_blind_player = self.next_player()
-        self.big_blind_player.role = Player.ROLE_BIG_BLIND
+        self.big_blind_player.blind_flag = Player.BLIND_FLAG_BIG
 
     def make_dealer_current_player(self):
         self._current_player_position = self._dealer_button_position

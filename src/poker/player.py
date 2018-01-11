@@ -10,8 +10,9 @@ class Player(PokerObject):
 
     ROLE_PLAYER = 'P'
     ROLE_DEALER = 'D'
-    ROLE_SMALL_BLIND = 'SB'
-    ROLE_BIG_BLIND = 'BB'
+
+    BLIND_FLAG_SMALL = 'SB'
+    BLIND_FLAG_BIG = 'BB'
 
     ACTION_SMALL_BLIND = 'S'
     ACTION_BIG_BLIND = 'B'
@@ -27,6 +28,7 @@ class Player(PokerObject):
         :type chips: int
         """
         self.role = self.ROLE_PLAYER
+        self.blind_flag = ''
         self.state = self.STATE_REACTING
         self.account = account
 
@@ -45,6 +47,7 @@ class Player(PokerObject):
     def prepare(self):
         self.state = self.STATE_REACTING
         self.role = self.ROLE_PLAYER
+        self.blind_flag = ''
         self.pot_contribution = 0
         self.pot_distribution = 0
         self.won_amount = 0
@@ -136,7 +139,7 @@ class Player(PokerObject):
         if not self.STATE_REACTING:
             return
 
-        print("Player {} #{}. Balance ${}: ".format(self.role, self.account.name, self.chips))
+        print("Player {}{} #{}. Balance ${}: ".format(self.role, self.blind_flag, self.account.name, self.chips))
         print("Your cards {}".format(self.pocket_cards))
         print("Calling ${}".format(call_amount))
 
