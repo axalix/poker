@@ -1,3 +1,4 @@
+from functools import reduce
 from poker.deck import Deck
 from poker.enums.game_stage_enum import GameStageEnum
 from poker.evaluator import Evaluator
@@ -99,11 +100,22 @@ class Game(PokerObject):
         self.current_bet = self.BIG_BLIND_AMOUNT
         self.current_raise = self.BIG_BLIND_AMOUNT
 
+    def _use_pot_contribution(self, players, contribution):
+        result = 0
+        for w in players:
+            amount = min(contribution, w.pot_distribution)
+            w.pot_distribution -= amount
+            result += amount
+        return result
+
     def distribute_pot(self, winners):
         if len(winners) == 1:
             self.pot = 0
             winners[0].won_amount = self.pot
             return
+
+        for winner in winners:
+            winner.pot_distribution = winner.pot_contribution
 
         groups = [[winners[0]]]
         current_hand_power = winners[0].evaluator.power
@@ -121,21 +133,23 @@ class Game(PokerObject):
             if self.pot == 0:
                 break
 
-            # split
-            if len(group) > 1:
-                group = sorted(group, key=lambda x: x.pot_contribution, reverse=True)
-                count = len(group)
-            else:
-                pot_contribution = group[0].pot_contribution
-                won_amount = 0
-                for w in winners:
-                    amount = min(pot_contribution, w.pot_contribution)
-                    w.pot_contribution -= amount
-                    won_amount += amount
+                # split
+            group = sorted(group, key=lambda x: x.pot_contribution, reverse=True)
+            max_pot_contribution = reduce(lambda x , y: max(x, y), map(lambda x: x.pot_distribution, group))
+            if max_pot_contribution == 0:
+                continue
 
-                won_amount = min(won_amount, self.pot)
-                group[0].won_amount = won_amount
+            group_amount = reduce(lambda x , y: x + y, map(lambda x: x.pot_contribution, group))
+            if group_amount == 0:
+                continue
+
+            shared_amount = self._use_pot_contribution(winners, max_pot_contribution)
+
+            for p in group:
+                won_amount = int(shared_amount * p.pot_contribution / group_amount)
+                p.won_amount = won_amount
                 self.pot -= won_amount
+
 
         for w in winners:
             w.increase_chips(w.won_amount)

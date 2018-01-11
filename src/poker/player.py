@@ -31,6 +31,7 @@ class Player(PokerObject):
 
         self.chips = chips
         self.pot_contribution = 0
+        self.pot_distribution = 0
         self.won_amount = 0
 
         self._pocket_cards = []
@@ -45,6 +46,7 @@ class Player(PokerObject):
         self.state = self.STATE_REACTING
         self.role = self.ROLE_PLAYER
         self.pot_contribution = 0
+        self.pot_distribution = 0
         self.won_amount = 0
         self._pocket_cards = []
         self.actions_map = {}
