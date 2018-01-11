@@ -76,7 +76,6 @@ class GameTable(PokerObject):
 
     # -----------------------
 
-
     def _reset_players_positions(self):
         self.move_dealer_button()
         self._current_player_position = self._dealer_button_position
@@ -88,11 +87,6 @@ class GameTable(PokerObject):
 
         self.big_blind_player = self.next_player()
         self.big_blind_player.role = Player.ROLE_BIG_BLIND
-
-
-        # print('D' +self.dealer.account.name)
-        # print('SB' +self.small_blind_player.account.name)
-        # print('BB' +self.big_blind_player.account.name)
 
     def make_dealer_current_player(self):
         self._current_player_position = self._dealer_button_position

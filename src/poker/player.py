@@ -40,7 +40,6 @@ class Player(PokerObject):
 
         self.evaluator = None
 
-
     # ------- Game
 
     def prepare(self):
@@ -52,7 +51,6 @@ class Player(PokerObject):
         self._pocket_cards = []
         self.actions_map = {}
         self.evaluator = None
-
 
     def _remember_charge(self, current_game_stage, action, amount):
         self.actions_map[current_game_stage] = {
@@ -76,7 +74,7 @@ class Player(PokerObject):
 
     def action_required(self, current_game_stage, current_game_bet):
         return (self.get_charge(current_game_stage) != current_game_bet or
-            self.actions_map[current_game_stage]['action'] in [self.ACTION_SMALL_BLIND, self.ACTION_BIG_BLIND])
+                self.actions_map[current_game_stage]['action'] in [self.ACTION_SMALL_BLIND, self.ACTION_BIG_BLIND])
 
     # ------- Cards
 
@@ -175,10 +173,6 @@ class Player(PokerObject):
             previous_bet = 0
 
         call_amount = min(self.chips, current_game_bet - previous_bet)
-
-        # print("current_game_bet {}".format(current_game_bet))
-        # print("previous_bet {}".format(previous_bet))
-        # print("self.chips {}".format(self.chips))
 
         if call_amount == 0:
             # last player is playing and there's no need to raise or call => no need to ask questions

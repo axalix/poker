@@ -1,23 +1,24 @@
 from collections import Counter
+
 from poker.card import Card
 from poker.enums.combination_enum import CombinationEnum
 from poker.poker_object import PokerObject
 
 
 class Evaluator(PokerObject):
-    PATTERN_HIGH_RANK                       = 'high_rank'
-    PATTERN_TWO_SAME_RANK                   = 'two_same_rank'
-    PATTERN_TWO_SAME_RANK_PAIRS             = 'two_same_rank_pairs'
-    PATTERN_THREE_SAME_RANK                 = 'three_same_rank'
-    PATTERN_THREE_SAME_RANK_TWO_SAME_RANK   = 'three_same_rank_two_same_rank'
-    PATTERN_FIVE_IN_ORDER                   = 'five_in_order'
-    PATTERN_FIVE_IN_ORDER_AND_SAME_SUIT     = 'five_in_order_and_same_suit'
-    PATTERN_FIVE_SAME_SUIT                  = 'five_same_suit'
-    PATTERN_FOUR_SAME_RANK                  = 'four_same_rank'
-    PATTERN_TJQKA_AND_SAME_SUIT             = 'tjqka_and_same_suit'
+    PATTERN_HIGH_RANK = 'high_rank'
+    PATTERN_TWO_SAME_RANK = 'two_same_rank'
+    PATTERN_TWO_SAME_RANK_PAIRS = 'two_same_rank_pairs'
+    PATTERN_THREE_SAME_RANK = 'three_same_rank'
+    PATTERN_THREE_SAME_RANK_TWO_SAME_RANK = 'three_same_rank_two_same_rank'
+    PATTERN_FIVE_IN_ORDER = 'five_in_order'
+    PATTERN_FIVE_IN_ORDER_AND_SAME_SUIT = 'five_in_order_and_same_suit'
+    PATTERN_FIVE_SAME_SUIT = 'five_same_suit'
+    PATTERN_FOUR_SAME_RANK = 'four_same_rank'
+    PATTERN_TJQKA_AND_SAME_SUIT = 'tjqka_and_same_suit'
 
     # 14-digits notations: 0 - 13. A = 13, 2 = 0
-    MAX_5 = 537824 # AAAAK: 13 * 14^4 + 13 * 14^3 + 13 * 14^2 + 13 * 14^1 + 13 * 14^0 + 1
+    MAX_5 = 537824  # AAAAK: 13 * 14^4 + 13 * 14^3 + 13 * 14^2 + 13 * 14^1 + 13 * 14^0 + 1
 
     # J - 11
     # Q - 12
@@ -85,7 +86,6 @@ class Evaluator(PokerObject):
         }
     }
 
-
     def __init__(self, pocket_cards, table_cards):
         """
         :type pocket_cards: list
@@ -93,9 +93,16 @@ class Evaluator(PokerObject):
         """
         self.pocket_cards = pocket_cards
         self.table_cards = table_cards
+        self.kicker_cards = []
+
+        self.combination = None
+        self.combination_cards = []
+        self.kicker_cards = []
+        self.power_cards = []
+        self.power = 0
+
         self.seven_cards = Card.sort_desc(self.table_cards + self.pocket_cards)
         self.process()
-
 
     def process(self):
         """
@@ -104,9 +111,8 @@ class Evaluator(PokerObject):
         for combination in CombinationEnum:
             power_cards = self.evaluate(combination)
             if power_cards:
-                (self.combination, self.combination_cards, self.kicker_cards, self.power_cards, self.power) = power_cards
+                self.combination, self.combination_cards, self.kicker_cards, self.power_cards, self.power = power_cards
                 return
-
 
     def evaluate(self, combination):
         """
@@ -127,7 +133,6 @@ class Evaluator(PokerObject):
 
         return [combination, combination_cards, kicker_cards, power_cards, power]
 
-
     def powerful_addition(self, combination_cards):
         """
         :type combination_cards: list of Card
@@ -139,7 +144,6 @@ class Evaluator(PokerObject):
     @property
     def name(self):
         return self.evaluator[self.combination]['name']
-
 
     # ------ Patterns and Helpers
 
@@ -165,11 +169,9 @@ class Evaluator(PokerObject):
 
         return same_suit_cards if len(same_suit_cards) > 4 else None
 
-
     @classmethod
     def high_rank(cls, seven_cards):
         return [seven_cards[0]]
-
 
     @classmethod
     def same_rank(cls, seven_cards, n):
@@ -188,7 +190,6 @@ class Evaluator(PokerObject):
             return list(filter(lambda x: x.rank == most_common[0][0], seven_cards))
         return None
 
-
     @classmethod
     def two_same_rank(cls, seven_cards):
         """
@@ -196,7 +197,6 @@ class Evaluator(PokerObject):
         :rtype: list of Card
         """
         return cls.same_rank(seven_cards, 2)
-
 
     @classmethod
     def two_same_rank_pairs(cls, seven_cards):
@@ -215,7 +215,6 @@ class Evaluator(PokerObject):
 
         return pair + second_pair
 
-
     @classmethod
     def three_same_rank(cls, seven_cards):
         """
@@ -223,7 +222,6 @@ class Evaluator(PokerObject):
         :rtype: list of Card
         """
         return cls.same_rank(seven_cards, 3)
-
 
     @classmethod
     def three_same_rank_two_same_rank(cls, seven_cards):
@@ -242,7 +240,6 @@ class Evaluator(PokerObject):
 
         return three + second_pair
 
-
     @classmethod
     def four_same_rank(cls, seven_cards):
         """
@@ -250,7 +247,6 @@ class Evaluator(PokerObject):
         :rtype: list of Card
         """
         return cls.same_rank(seven_cards, 4)
-
 
     @classmethod
     def five_in_order(cls, seven_cards):
@@ -289,7 +285,6 @@ class Evaluator(PokerObject):
 
         return five_or_more_suited_cards[:5]
 
-
     @classmethod
     def five_in_order_and_same_suit(cls, seven_cards):
         five_or_more_suited_cards = Evaluator.select_five_or_more_suited_cards(seven_cards)
@@ -297,7 +292,6 @@ class Evaluator(PokerObject):
             return None
 
         return cls.five_in_order(five_or_more_suited_cards)
-
 
     @classmethod
     def tjqka_and_same_suit(cls, seven_cards):
