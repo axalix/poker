@@ -42,7 +42,6 @@ class GameTable(PokerObject):
     def cards(self):
         return self.flop + self.turn + self.river
 
-
     def _prepare_players(self):
         for p in self.players:
             p.prepare()
@@ -57,7 +56,7 @@ class GameTable(PokerObject):
 
         return self.current_player()
 
-    def next_reacting_player(self, counter = 1):
+    def next_reacting_player(self, counter=1):
         next_player = self.next_player()
         if next_player.is_reacting():
             return next_player
@@ -74,7 +73,6 @@ class GameTable(PokerObject):
     @property
     def reacting_players_count(self):
         return len([x for x in self.players if x.is_reacting()])
-
 
     # -----------------------
 

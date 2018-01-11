@@ -156,7 +156,7 @@ class Game(PokerObject):
     # ------- Actions
 
     def stage_welcome(self):
-        print("Lets begin poker game #{}".format(self.id_))
+        print("Lets begin poker game #{}\n".format(self.id_))
         self.assign_pocket_cards()
 
     def stage_preflop(self):

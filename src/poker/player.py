@@ -64,10 +64,9 @@ class Player(PokerObject):
         previous_charge = self.get_charge(current_game_stage)
         if not previous_charge:
             previous_charge = 0
-        new_amount = amount + previous_charge
 
-        self._remember_charge(current_game_stage, action, new_amount)
-        return new_amount
+        self._remember_charge(current_game_stage, action, amount + previous_charge)
+        return amount
 
     def get_charge(self, current_game_stage):
         if current_game_stage not in self.actions_map:
@@ -145,7 +144,7 @@ class Player(PokerObject):
 
         action = None
         while action not in possible_actions:
-            action = 'A' #input("Please enter one of these actions: {}\n".format(", ".join(possible_actions)))
+            action = input("Please enter one of these actions: {}\n".format(", ".join(possible_actions)))
 
         if action == 'F':
             return self.do_fold()
@@ -182,8 +181,8 @@ class Player(PokerObject):
         # print("self.chips {}".format(self.chips))
 
         if call_amount == 0:
+            # last player is playing and there's no need to raise or call => no need to ask questions
             if reacting_players_count == 1:
-                # last player is playing and there's no need to raise or call => no need to ask questions
                 self.state = self.STATE_LAST_PLAYER
                 return 0
 
