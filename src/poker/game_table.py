@@ -63,6 +63,19 @@ class GameTable(PokerObject):
 
         return None if counter == len(self.players) else self.next_reacting_player(counter + 1)
 
+    def left_from_dealer_not_folded_player(self):
+        n = len(self.players)
+        i = self._dealer_button_position - 1
+        k = 0
+        while k < n:
+            k += 1
+            if i < 0:
+                i = n - 1
+
+            if not self.players[i].is_folded():
+                return self.players[i]
+            i -= 1
+
     def current_player(self):
         """
         :rtype: Player

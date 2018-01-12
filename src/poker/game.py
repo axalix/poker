@@ -131,6 +131,12 @@ class Game(PokerObject):
                     w.reward += reward_part
                     self.pot -= reward_part
 
+        # extra chip after split should be given to a player left to the dealer button
+        if self.pot > 0:
+            p = self.table.left_from_dealer_not_folded_player()
+            p.reward += self.pot
+            self.pot = 0
+
         for w in winners:
             w.increase_chips(w.reward)
 
