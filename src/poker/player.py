@@ -41,8 +41,6 @@ class Player(PokerObject):
 
         self.evaluator = None
 
-    # ------- Game
-
     def prepare(self):
         self.state = self.STATE_REACTING
         self.role = self.ROLE_PLAYER
@@ -53,29 +51,14 @@ class Player(PokerObject):
         self.actions_map = {}
         self.evaluator = None
 
-    def _remember_charge(self, current_game_stage, action, amount):
-        self.actions_map[current_game_stage] = {
-            'action': action,
-            'amount': amount
-        }
+    def is_reacting(self):
+        return self.state == Player.STATE_REACTING
 
-    def track_charge(self, current_game_stage, action, amount):
-        previous_charge = self.get_charge(current_game_stage)
-        if not previous_charge:
-            previous_charge = 0
+    def is_folded(self):
+        return self.state == Player.STATE_FOLDED
 
-        self._remember_charge(current_game_stage, action, amount + previous_charge)
-        return amount
-
-    def get_charge(self, current_game_stage):
-        if current_game_stage not in self.actions_map:
-            return None
-
-        return self.actions_map[current_game_stage]['amount']
-
-    def action_required(self, current_game_stage, current_game_bet):
-        return (self.get_charge(current_game_stage) != current_game_bet or
-                self.actions_map[current_game_stage]['action'] in [self.ACTION_SMALL_BLIND, self.ACTION_BIG_BLIND])
+    def is_all_ined(self):
+        return self.state == Player.STATE_ALL_INED
 
     # ------- Cards
 
@@ -91,10 +74,6 @@ class Player(PokerObject):
         """
         self._pocket_cards = cards
 
-    @property
-    def cards(self):
-        return self._pocket_cards
-
     # ------- Chips
 
     def increase_chips(self, amount):
@@ -106,8 +85,6 @@ class Player(PokerObject):
         if amount < 0:
             raise ValueError('Positive amount expected')
         self.chips -= amount
-
-    # ------- Game
 
     def charge(self, current_game_stage, action, amount):
         amount = min(amount, self.chips)
@@ -121,18 +98,64 @@ class Player(PokerObject):
 
         return self.track_charge(current_game_stage, action, amount)
 
-    def is_reacting(self):
-        return self.state == Player.STATE_REACTING
+    def __remember_charge(self, current_game_stage, action, amount):
+        self.actions_map[current_game_stage] = {
+            'action': action,
+            'amount': amount
+        }
 
-    def is_folded(self):
-        return self.state == Player.STATE_FOLDED
+    def track_charge(self, current_game_stage, action, amount):
+        previous_charge = self.get_charge(current_game_stage)
+        if not previous_charge:
+            previous_charge = 0
 
-    def is_all_ined(self):
-        return self.state == Player.STATE_ALL_INED
+        self.__remember_charge(current_game_stage, action, amount + previous_charge)
+        return amount
 
-    # ------- Interaction
+    def get_charge(self, current_game_stage):
+        if current_game_stage not in self.actions_map:
+            return None
 
-    def _ask(self, possible_actions, call_amount, min_raise_amount):
+        return self.actions_map[current_game_stage]['amount']
+
+
+        # ------- Interaction
+
+    def action_required(self, current_game_stage, current_game_bet):
+        return (self.get_charge(current_game_stage) != current_game_bet or
+                self.actions_map[current_game_stage]['action'] in [self.ACTION_SMALL_BLIND, self.ACTION_BIG_BLIND])
+
+    def request_action(self, current_game_stage, current_game_bet, current_game_raise, reacting_players_count):
+        # print(self.actions_map)
+        possible_actions = [
+            self.ACTION_FOLD,
+            self.ACTION_ALL_IN
+        ]
+
+        previous_bet = self.get_charge(current_game_stage)
+        if previous_bet is None:
+            previous_bet = 0
+
+        call_amount = min(self.chips, current_game_bet - previous_bet)
+
+        if call_amount == 0:
+            # last player is playing and there's no need to raise or call => no need to ask questions
+            if reacting_players_count == 1:
+                self.state = self.STATE_LAST_PLAYER
+                return 0
+
+            possible_actions.append(self.ACTION_CHECK)
+        elif self.chips > call_amount:
+            possible_actions.append(self.ACTION_CALL)
+
+        if self.chips - call_amount >= current_game_raise:
+            possible_actions.append(self.ACTION_RAISE)
+
+        action, amount = self.__ask(possible_actions, call_amount, current_game_raise)
+
+        return self.charge(current_game_stage, action, amount)
+
+    def __ask(self, possible_actions, call_amount, min_raise_amount):
         # impossible case, but lets keep it here while debugging
         if not self.STATE_REACTING:
             return
@@ -165,38 +188,6 @@ class Player(PokerObject):
 
         if action == 'K':
             return self.do_check()
-
-    # -------
-
-    def request_action(self, current_game_stage, current_game_bet, current_game_raise, reacting_players_count):
-        # print(self.actions_map)
-        possible_actions = [
-            self.ACTION_FOLD,
-            self.ACTION_ALL_IN
-        ]
-
-        previous_bet = self.get_charge(current_game_stage)
-        if previous_bet is None:
-            previous_bet = 0
-
-        call_amount = min(self.chips, current_game_bet - previous_bet)
-
-        if call_amount == 0:
-            # last player is playing and there's no need to raise or call => no need to ask questions
-            if reacting_players_count == 1:
-                self.state = self.STATE_LAST_PLAYER
-                return 0
-
-            possible_actions.append(self.ACTION_CHECK)
-        elif self.chips > call_amount:
-            possible_actions.append(self.ACTION_CALL)
-
-        if self.chips - call_amount >= current_game_raise:
-            possible_actions.append(self.ACTION_RAISE)
-
-        action, amount = self._ask(possible_actions, call_amount, current_game_raise)
-
-        return self.charge(current_game_stage, action, amount)
 
     # ------- Reactors
 

@@ -83,8 +83,7 @@ class Game(PokerObject):
 
         self.pot += amount
 
-    # ------- Money
-
+    # ------- Chips
 
     def charge_for_blinds(self):
         small_blind_amount = self.table.small_blind_player.charge(self.current_stage,
@@ -135,7 +134,7 @@ class Game(PokerObject):
         for w in winners:
             w.increase_chips(w.reward)
 
-    # ------- Actions
+    # ------- Stages
 
     def stage_welcome(self):
         print("Lets begin poker game #{}\n".format(self.id_))
@@ -163,7 +162,7 @@ class Game(PokerObject):
         for p in self.table.players:
             if p.is_folded():
                 continue
-            p.evaluator = Evaluator(p.cards, self.table.cards)
+            p.evaluator = Evaluator(p.pocket_cards, self.table.cards)
 
         winners = sorted([x for x in self.table.players if x.evaluator], key=lambda x: x.evaluator.power, reverse=True)
 

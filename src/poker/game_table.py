@@ -74,8 +74,6 @@ class GameTable(PokerObject):
     def reacting_players_count(self):
         return len([x for x in self.players if x.is_reacting()])
 
-    # -----------------------
-
     def _reset_players_positions(self):
         self.move_dealer_button()
         self._current_player_position = self._dealer_button_position

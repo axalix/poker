@@ -2,8 +2,8 @@ from poker.poker_object import PokerObject
 
 
 class Card(PokerObject):
-    ranks          = tuple(range(2, 15))
-    ranks_names    = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
+    ranks = tuple(range(2, 15))
+    ranks_names = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
     ranks_to_names = dict(zip(ranks, ranks_names))
     names_to_ranks = dict(zip(ranks_names, ranks))
 
@@ -20,23 +20,20 @@ class Card(PokerObject):
         self.rank = rank
         self.rank_name = 'A' if rank == 1 else self.ranks_to_names[rank]
 
-
         self.suit = suit
         self.suit_name = self.suits_to_names[suit]
 
     def is_ace(self):
         return self.rank == 14
 
-
-    #---- Operations
+    # ---- Operations
 
     @staticmethod
     def diff(list1, list2):
         return [e for e in list1 if e not in list2]
 
-
     @staticmethod
-    def sort_desc(cards, n = None):
+    def sort_desc(cards, n=None):
         """
         :type cards: list of Card
         :type n: int
@@ -55,7 +52,7 @@ class Card(PokerObject):
         power = 0
         n = len(cards)
         for i, card in enumerate(cards):
-            power += 14**(n - i - 1) * (card.rank - 1) # A = 14 or 13 in a 14-digits notation => rank - 1
+            power += 14 ** (n - i - 1) * (card.rank - 1)  # A = 14 or 13 in a 14-digits notation => rank - 1
 
         return power
 
@@ -64,4 +61,3 @@ class Card(PokerObject):
 
     def __repr__(self):
         return self.rank_name + self.suit_name
-
