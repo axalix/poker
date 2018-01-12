@@ -101,23 +101,13 @@ class Game(PokerObject):
     def _use_pot_contribution(players, contribution):
         result = 0
         for p in players:
-            amount = min(contribution, p.pot_distribution)
-            p.pot_distribution -= amount
+            amount = min(contribution, p.pot_contribution)
+            p.pot_contribution -= amount
             result += amount
         return result
 
     def distribute_pot(self, winners):
-        if len(winners) == 1:
-            winners[0].won_amount = self.pot
-            winners[0].pot_distribution = self.pot
-            winners[0].increase_chips(self.pot)
-            self.pot = 0
-            return
-
-        for winner in winners:
-            winner.pot_distribution = winner.pot_contribution
-
-        # same power hand groups
+        # make winners groups by power of the hands
         groups = [[winners[0]]]
         current_hand_power = winners[0].evaluator.power
         group_idx = 0
@@ -136,7 +126,7 @@ class Game(PokerObject):
             group_players_count = len(group)
             group = sorted(group, key=lambda x: x.pot_contribution)
             for i, p in enumerate(group):
-                side_pot = Game._use_pot_contribution(winners, p.pot_distribution)
+                side_pot = Game._use_pot_contribution(winners, p.pot_contribution)
                 for w in group[i:group_players_count + 1]:
                     won_amount_part = int(side_pot / (group_players_count - i))
                     w.won_amount += won_amount_part
