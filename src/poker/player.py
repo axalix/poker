@@ -115,11 +115,9 @@ class Player(PokerObject):
     def get_charge(self, current_game_stage):
         if current_game_stage not in self.actions_map:
             return None
-
         return self.actions_map[current_game_stage]['amount']
 
-
-        # ------- Interaction
+    # ------- Interaction
 
     def action_required(self, current_game_stage, current_game_bet):
         return (self.get_charge(current_game_stage) != current_game_bet or
@@ -189,7 +187,7 @@ class Player(PokerObject):
         if action == 'K':
             return self.do_check()
 
-    # ------- Reactors
+    # ------- Actions
 
     def do_fold(self):
         print('FOLD')
@@ -208,7 +206,6 @@ class Player(PokerObject):
             amount = int(input(
                 "How much? (Min: ${}) on top of another ${}, so you will be betting ${} or more: ".format(
                     min_raise_amount, call_amount, min_raise_amount + call_amount)))
-
         return self.ACTION_RAISE, call_amount + amount
 
     def do_call(self, call_amount):

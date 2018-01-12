@@ -97,7 +97,7 @@ class Game(PokerObject):
         self.pot = small_blind_amount + big_blind_amount
 
     @staticmethod
-    def _use_pot_contribution(players, contribution):
+    def __use_pot_contribution(players, contribution):
         result = 0
         for p in players:
             amount = min(contribution, p.pot_contribution)
@@ -125,7 +125,7 @@ class Game(PokerObject):
             group_players_count = len(group)
             group = sorted(group, key=lambda x: x.pot_contribution)
             for i, p in enumerate(group):
-                side_pot = Game._use_pot_contribution(winners, p.pot_contribution)
+                side_pot = Game.__use_pot_contribution(winners, p.pot_contribution)
                 for w in group[i:group_players_count + 1]:
                     reward_part = int(side_pot / (group_players_count - i))
                     w.reward += reward_part
