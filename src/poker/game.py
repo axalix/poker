@@ -1,5 +1,3 @@
-from functools import reduce
-
 from poker.deck import Deck
 from poker.enums.game_stage_enum import GameStageEnum
 from poker.evaluator import Evaluator
@@ -69,7 +67,8 @@ class Game(PokerObject):
     def request_player_action(self):
         player = self.table.current_player()
 
-        amount = player.request_action(self.current_stage, self.current_bet, self.current_raise, self.table.reacting_players_count)
+        amount = player.request_action(self.current_stage, self.current_bet, self.current_raise,
+                                       self.table.reacting_players_count)
 
         if amount > self.current_bet:
             new_raise = amount - self.current_bet
@@ -118,10 +117,10 @@ class Game(PokerObject):
         for winner in winners:
             winner.pot_distribution = winner.pot_contribution
 
+        # same power hand groups
         groups = [[winners[0]]]
         current_hand_power = winners[0].evaluator.power
         group_idx = 0
-
         for winner in winners[1:]:
             if current_hand_power == winner.evaluator.power:
                 groups[group_idx].append(winner)
@@ -130,25 +129,18 @@ class Game(PokerObject):
                 group_idx += 1
                 groups.append([winner])
 
+        # split in a group
         for group in groups:
             if self.pot == 0:
                 break
-
-            group = sorted(group, key=lambda x: x.pot_contribution, reverse=True)
-            max_pot_contribution = reduce(lambda x, y: max(x, y), map(lambda x: x.pot_distribution, group))
-            if max_pot_contribution == 0:
-                continue
-
-            group_amount = reduce(lambda x, y: x + y, map(lambda x: x.pot_contribution, group))
-            if group_amount == 0:
-                continue
-
-            shared_amount = Game._use_pot_contribution(winners, max_pot_contribution)
-
-            for p in group:
-                won_amount = int(shared_amount * p.pot_contribution / group_amount)  # split
-                p.won_amount = won_amount
-                self.pot -= won_amount
+            group_players_count = len(group)
+            group = sorted(group, key=lambda x: x.pot_contribution)
+            for i, p in enumerate(group):
+                side_pot = Game._use_pot_contribution(winners, p.pot_distribution)
+                for w in group[i:group_players_count + 1]:
+                    won_amount_part = int(side_pot / (group_players_count - i))
+                    w.won_amount += won_amount_part
+                    self.pot -= won_amount_part
 
         for w in winners:
             w.increase_chips(w.won_amount)
@@ -193,6 +185,7 @@ class Game(PokerObject):
         for winner in winners:
             e = winner.evaluator
             print(
-                '{}, ${}.  {}: {} => {}, {}'.format(winner.account.name, winner.won_amount, e.name,
-                                                    winner.pocket_cards, e.combination_cards,
-                                                    e.power))
+                '{}, won ${}, balance ${}.  {}: {} => {}, {}'.format(winner.account.name, winner.won_amount,
+                                                                     winner.chips, e.name,
+                                                                     winner.pocket_cards, e.combination_cards,
+                                                                     e.power))

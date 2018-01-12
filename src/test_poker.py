@@ -11,10 +11,10 @@ john = Account('John', 400)
 greg = Account('Greg', 400)
 
 r = Room([
-    Player(paul, 100),
-    Player(mike, 50),
-    Player(matt, 100),
-    Player(alex, 100),
+    Player(paul, 100), # D
+    Player(mike, 50),  # SB
+    Player(matt, 100), # BB
+    Player(alex, 100), # P
     # Player(adam, 50),
     # Player(john, 100),
     # Player(greg, 100)

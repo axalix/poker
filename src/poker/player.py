@@ -147,6 +147,12 @@ class Player(PokerObject):
         while action not in possible_actions:
             action = input("Please enter one of these actions: {}\n".format(", ".join(possible_actions)))
 
+        # action = 'A'
+        # if 'C' in possible_actions:
+        #     action = 'C'
+        # elif 'K' in possible_actions:
+        #     action = 'K'
+
         if action == 'F':
             return self.do_fold()
 
