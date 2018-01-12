@@ -128,12 +128,12 @@ class Game(PokerObject):
             for i, p in enumerate(group):
                 side_pot = Game._use_pot_contribution(winners, p.pot_contribution)
                 for w in group[i:group_players_count + 1]:
-                    won_amount_part = int(side_pot / (group_players_count - i))
-                    w.won_amount += won_amount_part
-                    self.pot -= won_amount_part
+                    reward_part = int(side_pot / (group_players_count - i))
+                    w.reward += reward_part
+                    self.pot -= reward_part
 
         for w in winners:
-            w.increase_chips(w.won_amount)
+            w.increase_chips(w.reward)
 
     # ------- Actions
 
@@ -175,7 +175,7 @@ class Game(PokerObject):
         for winner in winners:
             e = winner.evaluator
             print(
-                '{}, won ${}, balance ${}.  {}: {} => {}, {}'.format(winner.account.name, winner.won_amount,
+                '{}, won ${}, balance ${}.  {}: {} => {}, {}'.format(winner.account.name, winner.reward,
                                                                      winner.chips, e.name,
                                                                      winner.pocket_cards, e.combination_cards,
                                                                      e.power))
