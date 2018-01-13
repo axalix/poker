@@ -84,6 +84,7 @@ class Player(PokerObject):
     def decrease_chips(self, amount):
         if amount < 0:
             raise ValueError('Positive amount expected')
+        print("-$" + str(amount))
         self.chips -= amount
 
     def charge(self, current_game_stage, action, amount):
@@ -202,11 +203,12 @@ class Player(PokerObject):
     def do_raise(self, call_amount, min_raise_amount):
         print('RAISE')
         amount = -1
-        while amount < min_raise_amount or amount > self.chips:
+        min_bet_amount = call_amount + min_raise_amount
+        while amount < min_bet_amount or amount > self.chips:
             amount = int(input(
-                "How much? (Min: ${}) on top of another ${}, so you will be betting ${} or more: ".format(
-                    min_raise_amount, call_amount, min_raise_amount + call_amount)))
-        return self.ACTION_RAISE, call_amount + amount
+                "How much is your bet? Min raise: ${} Current call: ${}. You should be betting ${} or more: ".format(
+                    min_raise_amount, call_amount, min_bet_amount)))
+        return self.ACTION_RAISE, amount
 
     def do_call(self, call_amount):
         print('CALL')
